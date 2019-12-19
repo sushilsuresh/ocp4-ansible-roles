@@ -1,0 +1,11 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: "{{ storageclass_name }}"
+provisioner: netapp.io/trident
+reclaimPolicy: "{{ reclaim_policy }}"
+parameters:
+  backendType: "{{ backend_type }}"
+  media: ssd
+  provisioningType: "thin"
+  snapshots: "true"

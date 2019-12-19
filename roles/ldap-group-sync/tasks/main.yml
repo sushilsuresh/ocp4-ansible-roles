@@ -1,0 +1,46 @@
+---
+
+- name: Create Namespace
+  k8s:
+    state: present
+    definition: "{{ lookup('file', 'namespace.yaml') }}"
+
+- name: Create ServiceAccount
+  k8s:
+    state: present
+    definition: "{{ lookup('file', 'serviceaccount.yaml') }}"
+
+- name: Create ClusterRole
+  k8s:
+    state: present
+    definition: "{{ lookup('file', 'clusterrole.yaml') }}"
+
+- name: Create ClusterRoleBinding
+  k8s:
+    state: present
+    definition: "{{ lookup('file', 'clusterrolebinding.yaml') }}"
+
+- name: Create group-sync configmap
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'ldap-group-sync-cfgmap.j2') }}"
+
+- name: Create whitelist configmap
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'whitelist-cfgmap.j2') }}"
+
+- name: Create ca cert configmap
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'ca-cert-cfgmap.j2') }}"
+
+- name: Create Secret
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'secret.j2') }}"
+
+- name: Create CronJob
+  k8s:
+    state: present
+    definition: "{{ lookup('file', 'cronjob.yaml') }}"

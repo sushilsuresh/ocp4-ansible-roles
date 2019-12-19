@@ -1,0 +1,68 @@
+# Get the current state of the MachineConfigPool object before we start making
+# changes to the same.
+- name: Get MachineConfigPool objects before pushing out new machineconfig
+  k8s_facts:
+    api_version: machineconfiguration.openshift.io/v1
+    kind: MachineConfigPool
+  register: reg_mcpool_before
+
+# For trident iscsi volumes to mount and be attached to pods when pvc claims
+# are made we need to make 3 x configuration change to RHCOS vms
+# 1. Enable the iscsid service
+# 2. Push out a valid config file - /etc/multipath.conf
+# 3. Enable the multipathd service.
+#    NOTE: The service doesn't start without a valid multipath.conf config file
+- name: Create a new machine config to allows iscsi to function
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'machine-config.j2') }}"
+  loop: "{{ machineconfigpools }}"
+  loop_control:
+    loop_var: role
+  register: reg_mc_config
+
+# Once the machine configs are pushed out wait for a new machine config to be
+# rendered.
+- name: Wait for new machine configs to be rendered
+  k8s_facts:
+    api_version: machineconfiguration.openshift.io/v1
+    kind: MachineConfigPool
+  register: reg_mcpool_after
+  vars:
+    mconfig_before: "{{ reg_mcpool_before.resources | map(attribute='spec.configuration.name') | list }}"
+    # this variable will holds the list of machine configs name before update
+    mconfig_after: "{{ reg_mcpool_after.resources | map(attribute='spec.configuration.name') | list }}"
+    # this variable will holds the list of machine configs after the update
+  until:
+    - mconfig_before | intersect(mconfig_after)  | length == 0
+    # if all the machine configs have been updated with the newly rendered
+    # machine config names, then the intersection of these 2 sets should be
+    # an empty set.
+  retries: 12 # wait for 2 minutes (12 retires x 10 sec = 120 sec)
+  delay: 10
+  when:
+    - reg_mc_config.changed
+
+# Wait for the machine configures to be pushed out to all the woker/master
+# nodes. This coudl take a while.
+- name: Wait for updated machine configs to be pushed out
+  k8s_facts:
+    api_version: machineconfiguration.openshift.io/v1
+    kind: MachineConfigPool
+  register: reg_mcpool_status
+  vars:
+    status_query: "resources[*].status.conditions[?type=='Updated'].status"
+    # query to extract all status for the UPDATED column in machine config pool
+    update_status: "{{ reg_mcpool_status | json_query(status_query) | flatten | unique }}"
+    # once have all the status in an array, flatten it and unique it.
+    # All of the status's should be True. So after flattening and uniquing it
+    # we are expecting to see an array with just 1 element ['True']
+  until:
+    - update_status == ['True']
+  retries: 60 # wait for 1 hour max
+  delay: 60
+  # TODO: As of now we wait for 1 hours for the config changes to be pushed out
+  # This is purely an arbitary number based on what we found whilst installing
+  # a fresh cluster. I deally the amount of time we wait, should be a factor
+  # of the total number nodes in the cluster. May be a future nice have :-)
+

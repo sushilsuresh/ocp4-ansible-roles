@@ -1,0 +1,9 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: ldap-group-sync-ca-cert
+  namespace: openshift-cluster-ops
+  labels:
+    purpose: ldap-group-sync
+data:
+  ldap-ca.crt: {{ lookup('file', 'ca-cert.txt') | to_json }}

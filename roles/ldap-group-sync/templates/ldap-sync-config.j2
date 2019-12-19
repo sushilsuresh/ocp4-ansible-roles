@@ -1,0 +1,22 @@
+kind: "LDAPSyncConfig"
+apiVersion: "v1"
+url: "{{ ldap_endpoint }}"
+insecure: false
+bindDN: "{{ ldap_bind_user }}"
+bindPassword:
+  file: "/ldap-sync/secrets/bind_password"
+ca: "/ldap-sync/ca/ldap-ca.crt"
+augmentedActiveDirectory:
+  groupsQuery:
+    derefAliases: "never"
+    pageSize: 1000
+  groupUIDAttribute: "dn"
+  groupNameAttributes: ["cn"]
+  usersQuery:
+    baseDN: "OU=Staff,DC=office,DC=example,DC=com"
+    scope: "sub"
+    derefAliases: "never"
+    filter: "(objectClass=user)"
+    pageSize: 1000
+  userNameAttributes: ["sAMAccountName"]
+  groupMembershipAttributes: ["memberOf:1.2.840.113556.1.4.1941:"]

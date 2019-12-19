@@ -1,0 +1,24 @@
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfig
+metadata:
+  labels:
+    machineconfiguration.openshift.io/role: {{ role }}
+  name: {{ role }}-iscsi-configuration
+spec:
+  config:
+    ignition:
+      version: 2.2.0
+    storage:
+      files:
+      - contents:
+          source: data:text/plain;charset=utf-8;base64,{{ lookup('file', 'multipath.conf') | b64encode }}
+        filesystem: root
+        mode: 420
+        path: /etc/multipath.conf
+    systemd:
+      units:
+      - name: iscsid.service
+        enabled: true
+      - name: multipathd.service
+        enabled: true
+    osImageURL: ""

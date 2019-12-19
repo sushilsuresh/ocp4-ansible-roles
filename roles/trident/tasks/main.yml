@@ -1,0 +1,121 @@
+---
+# This playbook will install Trident on Openshift
+
+- name: Ensure folder exists file ownership, group and permissions
+  file:
+    path: "{{ trident_tempdir }}"
+    state: directory
+    mode: 0744
+
+- name: Unarchive trident package to local dir
+  unarchive:
+    src: "{{ trident_url }}"
+    dest: "{{ trident_tempdir }}"
+    remote_src: yes
+    creates: "{{ trident_ctl }}"
+
+- name: Get an existing Project
+  k8s_facts:
+    api_version: project.openshift.io/v1
+    kind: Project
+    name: "{{ trident_namespace }}"
+  register: reg_trident_project
+
+- name: Create a k8s project trident
+  shell: oc adm new-project {{ trident_namespace }}
+  when: reg_trident_project.resources | length == 0
+
+- name: Check that Trident Svc exists
+  k8s_facts:
+    api_version: v1
+    kind: Service
+    namespace: "{{ trident_namespace }}"
+    name: "{{ trident_svc }}"
+  register: reg_trident_svc
+
+- name: Install Trident
+  shell: '{{ trident_ctl }} install -n {{ trident_namespace }}'
+  when: reg_trident_svc.resources | length == 0
+
+- name: Fetch trident backends
+  k8s_facts:
+    api_version: trident.netapp.io/v1
+    kind: TridentBackend
+    namespace: "{{ trident_namespace }}"
+  register: reg_trident_backend
+
+- name: Generate Ontap backend configs
+  template:
+    src: trident-backend.j2
+    dest: "{{ trident_tempdir }}/backend-{{ backend.name }}.json"
+    mode: 0744
+  loop: "{{ ontap_backends }}"
+  loop_control:
+    loop_var: backend
+    label: "{{ backend.name }}"
+  when:
+    - backend.name not in "{{ reg_trident_backend.resources | map(attribute='backendName') | list }}"
+
+- name: Create Ontap backends
+  shell: "{{ trident_ctl }} create backend -f {{ trident_tempdir }}/backend-{{ backend.name }}.json -n {{ trident_namespace }} --debug"
+  loop: "{{ ontap_backends }}"
+  loop_control:
+    loop_var: backend
+    label: "{{ backend.name }}"
+  when:
+    - backend.name not in "{{ reg_trident_backend.resources | map(attribute='backendName') | list }}"
+
+- name: Fetch storageclasses
+  k8s_facts:
+    api_version: storage.k8s.io/v1
+    kind: StorageClass
+  register: reg_storageclass
+
+- debug:
+    msg: "{{ reg_storageclass.resources | map(attribute='metadata.name') | list }}"
+
+- name: Generate storageclass configs
+  template:
+    src: trident-storageclass.j2
+    dest: "{{ trident_tempdir }}/{{ storageclass_name }}-storageclass.yml"
+    mode: 0744
+  loop: "{{ ontap_backends | product(reclaimpolicy) | list }}"
+  loop_control:
+    label: "{{ storageclass_name }}"
+  vars:
+    storageclass_name: "{{ item[0].storageClass }}-{{ item[1].storageclass_suffix }}"
+    reclaim_policy: "{{ item[1].policy_name }}"
+    backend_type: "{{ item[0].storageDriverName }}"
+  when:
+    - storageclass_name not in "{{ reg_storageclass.resources | map(attribute='metadata.name') | list }}"
+
+- name: Create storageclasses
+  k8s:
+    state: present
+    src: "{{ trident_tempdir }}/{{ storageclass_name }}-storageclass.yml"
+  loop: "{{ ontap_backends | product(reclaimpolicy) | list }}"
+  loop_control:
+    label: "{{ storageclass_name }}"
+  vars:
+    storageclass_name: "{{ item[0].storageClass }}-{{ item[1].storageclass_suffix }}"
+    reclaim_policy: "{{ item[1].policy_name }}"
+    backend_type: "{{ item[0].storageDriverName }}"
+  when:
+    - storageclass_name not in "{{ reg_storageclass.resources | map(attribute='metadata.name') | list }}"
+
+- name: Cleanup any generated backend json files
+  file:
+    path: "{{ trident_tempdir }}/backend-{{ backend.name }}.json"
+    state: absent
+  loop: "{{ ontap_backends }}"
+  loop_control:
+    loop_var: backend
+    label: "{{ backend.name }}"
+
+- include_tasks: set-default-storage-class.yml
+
+# TODO: Making an assumption that we will be configuring iscsi tridnet backend.
+# We should only be include the configure_iscsi.yml tasks if and only if
+# we are provisioning an iscsi backed. There is not need to enable the iscsi
+# daemons on RHCOS if we are not setting up an iscsi backend
+- include_tasks: configure_iscsi.yml

@@ -1,0 +1,49 @@
+#Vars for Trident Drivers and Installation
+trident_version: 19.10.0
+trident_url: "https://github.com/NetApp/trident/releases/download/v{{ trident_version }}/trident-installer-{{ trident_version }}.tar.gz"
+trident_tempdir: "{{ inventory_dir }}/tmp/trident"
+trident_ctl: "{{ trident_tempdir }}/trident-installer/tridentctl"
+trident_namespace: trident
+trident_svc: trident-csi
+
+# Reclaim policies for the Storage classes
+# For each backend we plan on creating 2 x storage classes
+# One with the reclain policy of Delete and another with a policy of Delete
+reclaimpolicy:
+  - policy_name: Delete
+    storageclass_suffix: default
+  - policy_name: Retain
+    storageclass_suffix: retain
+
+# Used / needed only if you are configuring ISCSI backends
+# Need to find a better way instead of defining them statically
+machineconfigpools:
+  - master
+  - worker
+
+# Vars for Backend Configuration
+# Please change me
+ontap_backends:
+  - name: ontap-nfs
+    storageDriverName: ontap-nas
+    storageClass: ontap-nfs
+    ontap_svm: svm_ocp_nfs
+    managementLIF: 10.100.1.10
+    dataLIF: 10.100.1.11
+  - name: ontap-iscsi
+    storageDriverName: ontap-san
+    storageClass: ontap-iscsi
+    ontap_svm: svm_ocp_iscsi
+    managementLIF: 10.100.1.20
+    dataLIF: 10.100.1.21
+
+# You could hae a single SVM on netapp for both nfs and iscsi backends
+# In that case your "ontap_svm" and "managementLIF" will be the same for both
+# the bacends. Netapp requires the dataLIF to be running on uniqe IPs for the
+# different types of backends we configure.
+
+ontap_version: 1
+
+# Please change me! AND/OR use a vault or credential lookup to fetch them
+ontap_username: trident_user
+ontap_password: triden_password

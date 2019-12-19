@@ -1,0 +1,17 @@
+---
+# tasks file for ldap-oauth
+
+- name: Create CA cert cofigmap
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'ca-cert-cfgmap.j2') }}"
+
+- name: Create LDAP bind password secret
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'bind-password-secret.j2') }}"
+
+- name: Create LDAP oauth config
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'ldap-oauth-config.j2') }}"

@@ -1,0 +1,15 @@
+---
+# defaults file for ldap-oauth
+
+ca_cert_configmap_name: 'ldap-ca-cert'
+bind_password_secret_name: 'ldap-bind-secret'
+
+ldap_bind_user: 'simple-bind-user'
+
+ldap_bind_password: 'simple-bind-password'
+
+ldap_url: 'ldaps://ad1.office.example.com/OU=Staff,DC=office,DC=example,DC=com?sAMAccountName'
+
+# TODO: consider splitting up the various groups for better readability
+ldap_filter_groups: '??(|(memberOf=CN=developers,OU=Dev,OU=Staff,DC=office,DC=example,DC=com)(memberOf=CN=DevOps,OU=Roles,OU=Groups,OU=Staff,DC=office,DC=example,DC=com)(memberOf=CN=Ops,OU=Teams,OU=Groups,OU=Staff,DC=office,DC=example,DC=com))'
+

@@ -1,0 +1,18 @@
+apiVersion: authorization.openshift.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    purpose: ldap-group-sync
+  name: ldap-group-syncer
+rules:
+- apiGroups:
+  - ""
+  - user.openshift.io
+  attributeRestrictions: null
+  resources:
+  - groups
+  verbs:
+  - create
+  - get
+  - list
+  - update

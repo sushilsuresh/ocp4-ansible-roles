@@ -1,0 +1,5 @@
+CN=developers,OU=Dev,OU=Staff,DC=office,DC=example,DC=com
+CN=DevOps,OU=Roles,OU=Groups,OU=Staff,DC=office,DC=example,DC=com
+CN=Ops,OU=Teams,OU=Groups,OU=Staff,DC=office,DC=example,DC=com
+CN=SysAdmins,OU=Teams,OU=Groups,OU=Staff,DC=office,DC=example,DC=com
+CN=SuperAdmins,OU=Teams,OU=Groups,OU=Staff,DC=office,DC=example,DC=com

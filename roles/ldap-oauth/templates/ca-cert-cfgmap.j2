@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ ca_cert_configmap_name }}"
+  namespace: openshift-config
+data:
+  ca.crt: {{ lookup('file', 'ldap-ca-cert.txt') | to_json }}

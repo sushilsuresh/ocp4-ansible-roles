@@ -1,0 +1,11 @@
+---
+# defaults file for ldap-group-sync
+
+ldap_bind_password: 'simple-bind-password'
+
+ldap_bind_user: 'simple-bind-username'
+
+ldap_endpoint: 'ldaps://ad1.office.example.com'
+
+
+

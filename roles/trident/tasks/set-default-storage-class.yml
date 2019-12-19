@@ -1,0 +1,23 @@
+
+# TODO: This assume that there the default storage class will be
+# named "ontap_nfs_default"
+# Need to parametarise this.
+- name: Fetch storageclasses
+  k8s_facts:
+    api_version: storage.k8s.io/v1
+    kind: StorageClass
+    name: ontap-nfs-default
+  register: reg_ontap_nfs_default
+
+- name: Make sure ontap-nfs-default is the default storage class
+  command: oc patch storageclass ontap-nfs-default --type merge --patch='{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+  when:
+   - reg_ontap_nfs_default.resources | length == 1
+
+# Again assuing we are on a VMWare vsphere deployment and thin is the default
+# storage class
+# TODO: Need to clean this up and not make assumptions
+- name: Make sure thin storage class is not default any more
+  command: oc patch storageclass thin --type merge --patch='{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"false"}}}'
+  when:
+   - reg_ontap_nfs_default.resources | length == 1
