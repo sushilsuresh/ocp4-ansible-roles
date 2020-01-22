@@ -1,0 +1,18 @@
+---
+# tasks file for etcd-backup
+
+- name: Create Namespace
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'namespace.yaml.j2') }}"
+
+- include_tasks: serviceaccount.yml
+
+- include_tasks: create-pvc.yml
+
+- include_tasks: get_etcd_image.yml
+
+- name: Create CronJob
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'cronjob.yaml.j2') }}"

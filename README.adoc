@@ -54,3 +54,14 @@ need to be passed to the role will be quite a lot so ¯\_(ツ)_/¯
 ----
 ansible-playbook roles/trident/apply/main.yml
 ----
+
+=== Setting up a cronjob to take regular snapshot of the etcd database
+This role should work out of the for a regular OCP 4.x cluster.
+It has only been tested on  UPI OCP 4.2 cluster running on vSphere.
+
+The role needs a little bit more work to work on a disconnected OCP 4.x cluster
+
+[source,bash]
+----
+ansible-playbook roles/etcd-backup/apply/main.yml
+----
