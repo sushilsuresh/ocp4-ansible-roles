@@ -1,0 +1,12 @@
+---
+# defaults file for etcd-backup
+
+etcd_backup_namespace: "openshift-cluster-ops"
+etcd_backup_username: "etcd-backup-user"
+etcd_backup_user: "system:serviceaccount:{{ etcd_backup_namespace }}:{{ etcd_backup_username }}"
+etcd_cluster_id: "demo"
+etcd_backup_pvc_claim: "{{ etcd_cluster_id }}-etcd-backup"
+etcd_backup_volume_size: "10Gi"
+
+# Just documeting the variable. We set the variable using the set_fact module
+# etcd_image: "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:3c5301e86aa93d36d936cd5bd6b3575c98c4d33205be38c6dcbe09774b95ca7a"

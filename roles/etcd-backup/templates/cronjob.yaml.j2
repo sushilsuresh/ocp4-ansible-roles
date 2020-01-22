@@ -1,0 +1,81 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  labels:
+    purpose: etcd-backup
+  name: cronjob-etcd-backup
+  namespace: {{ etcd_backup_namespace }}
+spec:
+  concurrencyPolicy: Forbid
+  failedJobsHistoryLimit: 5
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      template:
+        spec:
+          activeDeadlineSeconds: 200
+          containers:
+          - command:
+            - /bin/sh
+            - -c
+            - LOGDATE=$(date +%Y%m%dT%H%M%S) ; /usr/local/bin/etcd-snapshot-backup.sh /etcd-backup/${LOGDATE}-snapshot.db
+            image: {{ etcd_image }}
+            imagePullPolicy: IfNotPresent
+            name: etcd-backup
+            resources:
+              requests:
+                cpu: 300m
+                memory: 250Mi
+            securityContext:
+              privileged: true
+            terminationMessagePath: /dev/termination-log
+            terminationMessagePolicy: FallbackToLogsOnError
+            volumeMounts:
+            - mountPath: /etc/ssl/etcd/
+              name: certs
+            - mountPath: /etc/etcd/
+              name: conf
+            - mountPath: /etc/kubernetes/
+              name: kubeconfig
+            - mountPath: /usr/local/bin
+              name: scripts
+            - mountPath: /etcd-backup
+              name: etcd-backup
+          nodeSelector:
+            node-role.kubernetes.io/master: ""
+          dnsPolicy: ClusterFirst
+          securityContext:
+            runAsuser: 0
+          serviceAccount: {{ etcd_backup_username }}
+          serviceAccountName: {{ etcd_backup_username }}
+          hostNetwork: true
+          restartPolicy: Never
+          terminationGracePeriodSeconds: 30
+          tolerations:
+          - effect: NoSchedule
+            operator: Exists
+          - effect: NoExecute
+            operator: Exists
+          volumes:
+          - name: certs
+            hostPath:
+              path: /etc/kubernetes/static-pod-resources/etcd-member
+              type: ""
+          - name: conf
+            hostPath:
+              path: /etc/etcd
+              type: ""
+          - name: kubeconfig
+            hostPath:
+              path: /etc/kubernetes
+              type: ""
+          - name: scripts
+            hostPath:
+              path: /usr/local/bin
+              type: ""
+          - name: etcd-backup
+            persistentVolumeClaim:
+              claimName: {{ etcd_backup_pvc_claim }}
+  schedule: '*/5 * * * *'
+  startingDeadlineSeconds: 200
+  successfulJobsHistoryLimit: 5

@@ -1,0 +1,97 @@
+== etcd-backup
+This role creates a cron job which peforms the following
+* creates a snapshot of the etcd database
+* saves the snapshot to an pvc volume
+
+The cron job creates a new pod with the exact same image as the etcd pods
+The reson why we are using the same image as the etcd pods is to make sure
+that the image has the etcdctl command backed into the image.
+
+The cron job pods use a node selector to make sure that they are scheduled to
+the master nodes. We do so that we can map a couple of paths for the master
+nodes to the cron job pod.
+
+The followign host pasts on the master are mapped
+
+* /etc/kubernetes/static-pod-resources/etcd-member
+* /etc/etcd
+* /etc/kubernetes
+* /usr/local/bin
+
+the /etc/ folders make available the kubernetes config folder and the etcd
+config folder and etcd certificates.
+
+The path /usr/local/bin is mounted so that we have access to the backup script
+etcd-snapshot-backup.sh within the cron job pod.
+
+=== Requirements
+The role assumes that your cluster has a working default storageclass. A PVC
+claim is made to store the etcd snapshots in a persistent manner. So having a
+fully function default sotrage class is a prerequisite.
+
+=== Role Variables
+Default role variables that are defined.
+
+etcd_backup_namespace: "openshift-cluster-ops"
+etcd_backup_username: "etcd-backup-user"
+etcd_backup_user: "system:serviceaccount:{{ etcd_backup_namespace }}:{{ etcd_backup_username }}"
+etcd_cluster_id: "demo"
+etcd_backup_pvc_claim: "{{ etcd_cluster_id }}-etcd-backup"
+etcd_backup_volume_size: "10Gi"
+
+
+=== Dependencies
+This ansible role requires that you are have an authenticated kubectl session
+which has sufficient previlegges to create namespaces, and create cronjobs
+as well as create a service account with escalated privilleges.
+
+
+=== Assumptions
+An assumption is made that the end user has a backup policy in place to backup
+the pvc volume where the etcd snapshots are saved. This role was first written
+for a OCP 4.2 UPI cluster on VSphere. The customer had regular daily snapshots
+for the vmdks that where taken and stored external to the cluster.
+
+
+=== Example Usage
+Example invocation of the role in a playbook
+
+[source,yaml]
+----
+- hosts: localhost
+  tasks:
+    - include_role:
+        name: etcd-backup
+----
+
+OR
+
+[source,yaml]
+----
+- hosts: localhost
+  tasks:
+    - include_role:
+        name: etcd-backup
+      vars:
+        etcd_backup_volume_size: "100Gi"
+----
+
+if you would like to use the role without including it or writing a playbook
+From the root of this github repo you can run the following
+
+[source,bash]
+----
+ansible-playbook roles/etcd-backup/apply/main.yml
+----
+
+=== TODO
+This cron job created by this role works great for a OCP 4.x cluster that has
+got internet connectivity.
+
+Fails miserably when run within a disconnected cluster.
+This is because the deafult backup script
+/usr/local/bin/etcd-snapshot-backup.sh
+download the etcdctl command from the internet :facepalm
+
+Need to push a customised script along with the cronojb which will use the
+local etcdctl command instead of downlaoding it from the internet.
