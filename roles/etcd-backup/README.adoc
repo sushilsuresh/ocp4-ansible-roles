@@ -73,7 +73,6 @@ OR
     - include_role:
         name: etcd-backup
       vars:
-        etcd_image: "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:3c5301e86aa93d36d936cd5bd6b3575c98c4d33205be38c6dcbe09774b95ca7a"
         etcd_backup_volume_size: "100Gi"
 ----
 
