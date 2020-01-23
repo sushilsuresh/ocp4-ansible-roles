@@ -56,7 +56,7 @@ ansible-playbook roles/trident/apply/main.yml
 ----
 
 === Setting up a cronjob to take regular snapshot of the etcd database
-This role should work out of the for a regular OCP 4.x cluster.
+This role should work out of the box or a regular OCP 4.x cluster.
 It has only been tested on  UPI OCP 4.2 cluster running on vSphere.
 
 The role needs a little bit more work to work on a disconnected OCP 4.x cluster
@@ -64,4 +64,16 @@ The role needs a little bit more work to work on a disconnected OCP 4.x cluster
 [source,bash]
 ----
 ansible-playbook roles/etcd-backup/apply/main.yml
+----
+
+=== Installing OpenShift Service Mesh (ossm)
+This role should work for a regular OCP 4.x cluster and installs servicemesh.
+There are no variables to customise the storage requirements for the some of
+the servicemesh controlplane instances.
+
+You will have to edit the yaml files where they are defined.
+
+[source,bash]
+----
+ansible-playbook roles/service-mesh/apply/main.yml
 ----
