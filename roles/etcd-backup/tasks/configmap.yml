@@ -1,0 +1,4 @@
+- name: Create config map for custom backup scripts
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'configmap.yaml.j2') }}"
