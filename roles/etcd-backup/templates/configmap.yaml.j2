@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ etcd_backup_configmap }}"
+  namespace: "{{ etcd_backup_namespace }}"
+data:
+  etcd-backup.sh: {{ lookup('file', 'etcd-backup.sh') | to_json }}
+  etcd-snapshot-backup-disconnected.sh: {{ lookup('file', 'etcd-snapshot-backup-disconnected.sh') | to_json }}
+  

@@ -12,6 +12,8 @@
 
 - include_tasks: get_etcd_image.yml
 
+- include_tasks: configmap.yml
+
 - name: Create CronJob
   k8s:
     state: present
