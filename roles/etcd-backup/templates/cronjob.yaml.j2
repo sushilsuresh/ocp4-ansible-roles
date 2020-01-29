@@ -39,10 +39,10 @@ spec:
               name: scripts
             - mountPath: /etcd-backup
               name: etcd-backup
-            - mountPath: /usr/loca/bin/etcd-backup.sh
+            - mountPath: /usr/local/bin/etcd-backup.sh
               name: etcd-backup-scripts
               subPath: etcd-backup.sh
-            - mountPath: /usr/loca/bin/etcd-snapshot-backup-disconnected.sh
+            - mountPath: /usr/local/bin/etcd-snapshot-backup-disconnected.sh
               name: etcd-backup-scripts
               subPath: etcd-snapshot-backup-disconnected.sh
           nodeSelector:
@@ -80,12 +80,10 @@ spec:
           - name: etcd-backup
             persistentVolumeClaim:
               claimName: {{ etcd_backup_pvc_claim }}
-          - name: etcd-backup-script
-            configMap:
-              name: "{{ etcd_backup_configmap }}"
           - name: etcd-backup-scripts
             configMap:
               name: "{{ etcd_backup_configmap }}"
+              defaultMode: 0755
   schedule: '*/5 * * * *'
   startingDeadlineSeconds: 200
   successfulJobsHistoryLimit: 5

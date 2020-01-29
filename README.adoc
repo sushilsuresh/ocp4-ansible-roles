@@ -59,12 +59,18 @@ ansible-playbook roles/trident/apply/main.yml
 This role should work out of the box or a regular OCP 4.x cluster.
 It has only been tested on  UPI OCP 4.2 cluster running on vSphere.
 
-The role needs a little bit more work to work on a disconnected OCP 4.x cluster
+The etcd-backup role work on disconnected OpenShift cluster as well.
+YaY
 
 [source,bash]
 ----
 ansible-playbook roles/etcd-backup/apply/main.yml
 ----
+
+This will create a volume named `demo-etcd-backup`
+and drop the etcd snapshots in there.
+Default frequency is every 5 minutes (useful when testing)
+Please adjust it accordingly
 
 === Installing OpenShift Service Mesh (ossm)
 This role should work for a regular OCP 4.x cluster and installs servicemesh.
