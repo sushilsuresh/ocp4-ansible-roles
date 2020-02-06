@@ -1,0 +1,98 @@
+== splunk-connect
+This role configures an OpenShift cluster to forward logs to a splunk endpoint
+using the splunk-connect.
+
+This role was setup based on splunk connect for kubernetes.
+https://github.com/splunk/splunk-connect-for-kubernetes
+
+Please *DO NOT* use the role as is.
+
+IMPORTANT: splunk-connect project is fast moving. When creating this role the
+splunk connect helm charts were not capable for creating service accounts or
+setup scc roles for the service account. Looks like these features have been
+added recently to the develop branch.
+eg: https://github.com/splunk/splunk-connect-for-kubernetes/pull/304/files
+
+
+=== How were the templates in the templates folder generated ?
+I chose to use helm 3 , which mean i did not have to worry about setting up
+tiller. (helm 3 was released just 3 days before this role was created)
+
+- Create a my_values.yaml file containing config parameters
+- run helm template to genereate the templates
+
+```
+mkdir templates
+helm template splunk-connect \
+     -f my_values.yaml \
+     https://github.com/splunk/splunk-connect-for-kubernetes/releases/download/1.3.0/splunk-connect-for-kubernetes-1.3.0.tgz  \
+     --output-dir ./tempaltes
+```
+
+=== Contents of my_values.yaml vars file
+```
+global:
+  logLevel: debug
+  splunk:
+    hec:
+      insecureSSL: true
+      host: splunk.example.com
+      port: 8088
+      token: hec-token-to-be-templated
+      indexName: k8s_logs
+  kubernetes:
+    clusterName: "opentlclab-to-be-templated"
+    openshift: true
+
+## Enabling logging will install the `splunk-kubernetes-logging` chart to a kubernetes
+## cluster to collect logs generated in the cluster to a Splunk indexer/indexer cluster.
+logging:
+  enabled: true
+
+## Enabling objects will install the `splunk-kubernetes-objects` chart to a kubernetes
+## cluster to collect kubernetes objects in the cluster to a Splunk indexer/indexer cluster.
+objects:
+  enabled: true
+
+## Enabling metrics will install the `splunk-kubernetes-metrics` chart to a kubernetes
+## cluster to collect metrics of the cluster to a Splunk indexer/indexer cluster.
+metrics:
+  enabled: false
+
+splunk-kubernetes-logging:
+  splunk:
+    hec:
+      insecureSSL: true
+      host: splunk.example.com
+      port: 8088
+      token: hec-token-to-be-templated
+      indexName: k8s_logs
+  containers:
+    logFormatType: cri
+    logFormat: "%Y-%m-%dT%H:%M:%S.%N%:z"
+  serviceAccount:
+    create: true
+
+splunk-kubernetes-objects:
+  splunk:
+    hec:
+      insecureSSL: true
+      host: splunk.example.com
+      port: 8088
+      token: hec-token-to-be-templated
+      indexName: k8s_objects
+  serviceAccount:
+    create: true
+```
+
+=== Dependencies
+Helm3 command line utility installed to generate your templates.
+
+=== Assumptions
+you are comforatable replacing config settings form the template to be
+variables that can be substituted.
+
+TODO:
+
+  - needs to do more testing and clean up the role
+  - also big changes coming up in the next version that will be released.
