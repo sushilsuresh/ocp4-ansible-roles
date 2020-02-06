@@ -1,0 +1,41 @@
+---
+
+- name: Create ServiceAccount
+  k8s:
+    state: present
+    namespace: "{{ splunk_connect_namespace }}"
+    definition: "{{ lookup('template', 'splunk-kubernetes-objects/serviceAccount.yaml.j2') }}"
+  register: reg_splunk_kubernetes_objects_sa
+
+- name: Create ClusterRole
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'splunk-kubernetes-objects/clusterRole.yaml.j2') }}"
+
+- name: Create ClusterRoleBinding
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'splunk-kubernetes-objects/clusterRoleBinding.yaml.j2') }}"
+
+- name: Create ConfigMap
+  k8s:
+    state: present
+    namespace: "{{ splunk_connect_namespace }}"
+    definition: "{{ lookup('template', 'splunk-kubernetes-objects/configMap.yaml.j2') }}"
+
+- name: Create Secret
+  k8s:
+    state: present
+    namespace: "{{ splunk_connect_namespace }}"
+    definition: "{{ lookup('template', 'splunk-kubernetes-objects/secret.yaml.j2') }}"
+
+- name: Add scc to user
+  shell: "oc adm policy add-scc-to-user privileged system:serviceaccount:{{ splunk_connect_namespace }}:splunk-kubernetes-objects"
+  when:
+    - reg_splunk_kubernetes_objects_sa.changed
+
+- name: Create Deployment
+  k8s:
+    state: present
+    namespace: "{{ splunk_connect_namespace }}"
+    definition: "{{ lookup('template', 'splunk-kubernetes-objects/deployment.yaml.j2') }}"

@@ -1,0 +1,25 @@
+---
+splunk_connect_namespace: splunk
+splunk_connect_version: 1.3.0
+splunk_connect_fluentd_version: 1.2.0
+splunk_connect_kuber_objects: 1.1.2
+
+# Splunk endpoint configuration parameters.
+splunk_hec_host: splunk.example.com
+
+# each index can have separate hec tokens
+splunk_logging_hec_token: 5d4a219a-46dd-4da8-b6e4-3b810d685c72
+splunk_system_hec_token: eb0771d7-7f78-4ef3-9825-acd94120b51b
+
+splunk_cluster_id: 'opentlc'
+
+# Assuming we are going to be using separate index for each of the 3 components
+# - container logs
+# - OpenShift objects
+# - Openshift metrics
+
+# Name of the index in splunk to send logs to.
+splunk_logging_index: container-logs
+splunk_system_index: k8s-objects
+# splunk_metrics_index: k8s-metrics
+# Possible index to send metrics data to
