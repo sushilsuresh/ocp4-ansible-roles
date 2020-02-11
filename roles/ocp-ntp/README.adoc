@@ -1,0 +1,38 @@
+== ocp-ntp
+This role is used to configure NTP for the RHCOS nodes by pushing out a chrony
+configuration to the nodes via the machineconfig operator. By default the role
+generates a macineconfig for 2 x machineconfig pools master and worker.
+
+=== Role Variables
+Default role variables that are defined.
+
+```
+ntp_servers: []
+
+ntp_pools: []
+
+```
+By default the role will noop if no ntp servers or ntp_pool servers are
+provided.
+
+
+
+=== Example Usage
+Example invocation of the role in a playbook
+
+[source,yaml]
+
+If you would like to configure cutom NTP servers to be used by the chrony
+daemon, you can invoke the role like this
+
+[source,yaml]
+----
+- hosts: localhost
+  tasks:
+    - include_role:
+        name: ocp-ntp
+      vars:
+        ntp_servers:
+          - ntp1.example.com
+          - ntp2.example.com
+----

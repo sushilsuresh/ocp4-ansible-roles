@@ -1,0 +1,14 @@
+---
+# defaults file for ntp
+#
+machine_config_suffix: "chrony-config"
+
+machineconfigpools:
+  - master
+  - worker
+
+
+ntp_servers: []
+
+ntp_pools: []
+
