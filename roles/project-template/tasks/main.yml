@@ -1,0 +1,14 @@
+---
+# tasks file for project-template
+
+- name: create the default project template
+  command: oc apply -f "{{ project_request_template }}"
+  register: reg_default_project_request
+  changed_when:
+    - reg_default_project_request.stdout.find(" unchanged") == -1
+
+- name: Create a custom resource to start using then new template
+  command: oc apply -f "{{ cr_project_request }}"
+  register: reg_cr_project_request
+  changed_when:
+    - reg_cr_project_request.stdout.find(" unchanged") == -1

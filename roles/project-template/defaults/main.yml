@@ -1,0 +1,5 @@
+---
+
+project_request_template: "{{ inventory_dir }}/roles/project-template/files/project-request-template.yaml"
+cr_project_request: "{{ inventory_dir }}/roles/project-template/files/cr_project_request.yaml"
+
