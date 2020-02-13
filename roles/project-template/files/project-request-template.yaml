@@ -49,6 +49,13 @@ items:
   - apiVersion: networking.k8s.io/v1
     kind: NetworkPolicy
     metadata:
+      name: deny-by-default
+    spec:
+      podSelector:
+      ingress: []
+  - apiVersion: networking.k8s.io/v1
+    kind: NetworkPolicy
+    metadata:
       name: allow-from-same-namespace
     spec:
       podSelector:
@@ -65,6 +72,19 @@ items:
         - namespaceSelector:
             matchLabels:
               network.openshift.io/policy-group: monitoring
+      podSelector: {}
+      policyTypes:
+      - Ingress
+  - apiVersion: networking.k8s.io/v1
+    kind: NetworkPolicy
+    metadata:
+      name: allow-from-openshift-ingress
+    spec:
+      ingress:
+      - from:
+        - namespaceSelector:
+            matchLabels:
+              network.openshift.io/policy-group: ingress
       podSelector: {}
       policyTypes:
       - Ingress
