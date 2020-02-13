@@ -1,0 +1,29 @@
+---
+# tasks file for scheduler-config
+
+- name: Gather all the Nodes
+  k8s_info:
+    kind: Node
+  register: ocp_nodes
+
+- name: Label infra nodes
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: "{{ item.metadata.name }}"
+        labels:
+          node-role.kubernetes.io/infra: ""
+      spec:
+        taints:
+        - effect: "PreferNoSchedule"
+          key: "node-role.kubernetes.io/infra"
+  when:
+    - item.metadata.name is search("infra")
+    - item["metadata"]["labels"]["node-role.kubernetes.io/infra"] is not defined or
+      item["spec"]["taints"] is not defined
+  loop_control:
+    label: "{{ item.metadata.name }}"
+  loop: "{{ ocp_nodes.resources }}"

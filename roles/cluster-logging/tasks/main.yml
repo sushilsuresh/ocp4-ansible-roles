@@ -1,0 +1,38 @@
+---
+# tasks file for cluster-logging
+
+- name: Create openshift-operators-redhat Namespace
+  command: oc apply -f {{ role_path }}/files/eo-namespace.yaml
+  register: reg_eo_namespace
+  changed_when: reg_eo_namespace is not search(' unchanged')
+
+- name: Create openshift-logging Namespace
+  command: oc apply -f {{ role_path }}/files/clo-namespace.yaml
+  register: reg_clo_namespace
+  changed_when: reg_clo_namespace is not search(' unchanged')
+
+- name: Create OperatorGroup openshift-operators-redhat
+  command: oc apply -f {{ role_path }}/files/eo-og.yaml
+  register: reg_eo_og
+  changed_when: reg_eo_og is not search(' unchanged')
+
+- name: Create Subscription for elasticsearch-operator
+  command: oc apply -f {{ role_path }}/files/eo-sub.yaml
+  register: reg_eo_sub
+  changed_when: reg_eo_sub is not search(' unchanged')
+
+- name: Create necessary RBAC objects
+  command: oc apply -f {{ role_path }}/files/eo-rbac.yaml
+  register: reg_eo_rbac
+  changed_when: reg_eo_rbac is not search(' unchanged')
+
+- name: Create Subscription for clusterlogging-operator
+  command: oc apply -f {{ role_path }}/files/clo-sub.yaml
+  register: reg_clo_sub
+  changed_when: reg_clo_sub is not search(' unchanged')
+
+- name: Create ClusterLogging instance
+  command: oc apply -f {{ role_path }}/files/ClusterLogging.yaml
+  register: reg_clusterlogging
+  changed_when: reg_clusterlogging is not search(' unchanged')
+
