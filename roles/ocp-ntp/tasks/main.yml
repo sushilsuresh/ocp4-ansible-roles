@@ -1,0 +1,9 @@
+---
+# tasks file for ocp-ntp
+
+# Only invoke the configure-chrony.yml tasks if either of the variables
+# contain a list of NTP servers / pool names
+- include_tasks: configure-chrony.yml
+  when:
+    - ntp_servers or ntp_pools
+
