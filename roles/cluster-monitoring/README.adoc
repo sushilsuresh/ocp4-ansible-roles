@@ -1,0 +1,21 @@
+Role Name
+=========
+
+A brief description of the role goes here.
+
+Requirements
+------------
+
+
+Role Variables
+--------------
+
+
+Dependencies
+------------
+
+IMPORTANT: Assuming you have nodes with the role "infra" setup for you cluster
+
+Example Playbook
+----------------
+

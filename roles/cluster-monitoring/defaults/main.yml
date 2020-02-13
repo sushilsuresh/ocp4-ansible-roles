@@ -1,0 +1,17 @@
+---
+# defaults file for cluster-monitoring
+
+# Additional variables that are to be defined are
+#
+# PROMETHEUS_RETENTION_PERIOD:
+# PROMETHEUS_STORAGE_SIZE
+# ALERTMANAGER_STORAGE_SIZE
+#
+# Please refer to the below OCP documentation for an idea of how much
+# storage would be required
+# https://docs.openshift.com/container-platform/4.2/scalability_and_performance/scaling-cluster-monitoring-operator.html#scaling-cluster-monitoring-operator
+
+PROMETHEUS_STORAGE_SIZE: "100Gi"
+PROMETHEUS_RETENTION_PERIOD: "7d"
+ALERTMANAGER_STORAGE_SIZE: "40Gi"
+

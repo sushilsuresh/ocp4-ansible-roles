@@ -1,0 +1,9 @@
+---
+# tasks file for cluster-monitoring
+
+- name: Create ConfigMap for openshift-monitoring
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'cluster-monitoring-config.j2') }}"
+
+
