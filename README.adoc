@@ -1,27 +1,40 @@
 == Playbooks to configure OpenShift 4.x cluster
 
 
-Couple of ansible roles to configure serveral components for a freshly intalled
-openshift cluster. Typical configurations that need to be performed are
-
-
-* setup ldap oauth
-* sync user groups from ldap to openshift
-* etc..
+Couple of ansible roles to configure serveral components for a fresh install of
+an openshift cluster.
 
 IMPORTANT: None of these role are written to be used blindly. They are provided
-as a POC/ minimum viable option to get you kickstarted without having to put an
-effort to figure out exactly what all needs to be done.
+as a POC/minimum viable option to get you kickstarted without having to put a
+ton of effort to figure out exactly what all needs to be done.
 
 A lot of assumptions are made.
 So please walk through the roles first, before attempting to run them.
 
 === Runing the indivdual roles
 You can run individual roles by runnning ansible playbook against the
-<role>/apply/main.yaml playbook in each of the individual roles.
+roles/<role-name>/apply/main.yaml playbook in each of the individual roles.
 
 ----
 ansible-playbook roles/<role-name>/apply/main.yaml
+----
+
+Below are the list of ansible roles that are available. Do checkout the
+individual role's documenation for more information on what they do.
+
+== List of Roles
+
+----
+roles/
+├── cluster-monitoring
+├── etcd-backup
+├── ldap-group-sync
+├── ldap-oauth
+├── ocp-ntp
+├── project-template
+├── service-mesh
+├── splunk-connect
+└── trident
 ----
 
 === Setting up LDAP
