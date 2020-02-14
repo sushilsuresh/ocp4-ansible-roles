@@ -1,0 +1,84 @@
+== ldap-oauth
+
+=== Setting up LDAP oAuth in OpenShift 4.x
+
+The ldap-oauth role handles configuring the default identity provider for the
+cluster. An OCP cluster can have multiple identity providers eg: LDAP oAuth and
+a htpasswd file, for instance.
+
+NOTE: This role in its current state will overwrite or blow away any other
+oAuth providers that are configured.
+
+=== Role Variables
+Default role variables that are defined and should be changed
+
+----
+ldap_bind_user: 'simple-bind-user'
+ldap_bind_password: 'simple-bind-password'
+ldap_url: 'ldaps://ad1.office.example.com/OU=Staff,DC=office,DC=example,DC=com?sAMAccountName'
+ldap_filter_groups: ''
+----
+
+ldap_bind_user::
+  ldap bind user used to make connect to the AD to validate users
+ldap_bind_password::
+  ldap user's password to authenticate against AD
+ldap_url::
+  specify the ldap URL including the OU under which all end users are listed.
+  the playbooks will use secure LDAP irrespective of weather you use ldap or
+  ldaps. If you want to to use insecure LDAP, you need to edit the ldap oauth
+  template.
+ldap_filter_groups::
+  ldap_filter_groups is left as an empty string. This would mean that user in
+  the Corporate organisation with an AD account will be able to login to the
+  OpenShift cluster. You would want to define this filter groups, to limit
+  the scope of people who can login. below is an example of what you
+
+files/ldap-ca-cert.txt::
+  This file should contain the root ca cert for the internal or external CA
+  that signed the LDAP server's certificate. This Readme attempts to walk you
+  through extrating the RootCA cert for you LDAP endpoint. *Attempts!*.
+
+  ldap_filter_groups: '??(|(memberOf=CN=developers,OU=Dev,OU=Staff,DC=office,DC=example,DC=com)(memberOf=CN=DevOps,OU=Roles,OU=Groups,OU=Staff,DC=office,DC=example,DC=com)(memberOf=CN=Ops,OU=Teams,OU=Groups,OU=Staff,DC=office,DC=example,DC=com))'
+
+=== Example Usage
+No point in including this role and passing a ton of variables. This role was
+never written to be used out of the box anyways. There is a root an ldap ca
+cert file ldap-ca-cert.txt, whose contents have to be replaced with your own.
+
+So no example usage.
+
+== Extract RootCA that signed your ldap servers's cert
+I am just going to use www.google.com:443 , as my endpoint as I did not have an
+ldap endpoint at the point of writing this readme. Use your LDAPS server
+endpoint and port 636.
+
+* eg: ad1.office.example.com:636
+
+== Step 1 - Extract text content from the LDAPS certificate.
+----
+echo | openssl s_client -showcerts -connect www.google.com:443 2>&1 \
+     | openssl x509 -noout -text
+----
+
+== Step 2 - Extract the RootCA crt URL from the above text output.
+----
+echo | openssl s_client -showcerts -connect www.google.com:443 2>&1 \
+     | openssl x509 -noout -text \
+     | grep 'CA Issuers' \
+     | grep -o http.*
+http://pki.goog/gsr2/GTS1O1.crt
+----
+
+== Step 3 - Download/Extract the RootCA cert from the above URL
+The RootCA certs are almost always in DER format. So we need to convert it to
+pem format.
+----
+wget -q http://pki.goog/gsr2/GTS1O1.crt -O - \
+      | openssl x509 -inform der -out - \
+      > ldap-ca-cert.txt
+----
+
+=== TODO
+May be nice to have the role not blow away the entire oAuth config. It should
+only configure / modify the LDAP oAuth section.
