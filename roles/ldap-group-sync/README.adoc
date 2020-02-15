@@ -1,0 +1,98 @@
+== Playbooks to configure OpenShift 4.x cluster
+
+
+Couple of ansible roles to configure serveral components for a fresh install of
+an openshift cluster.
+
+IMPORTANT: None of these role are written to be used blindly. They are provided
+as a POC/minimum viable option to get you kickstarted without having to put a
+ton of effort to figure out exactly what all needs to be done.
+
+A lot of assumptions are made.
+So please walk through the roles first, before attempting to run them.
+
+=== Runing the indivdual roles
+You can run individual roles by runnning ansible playbook against the
+roles/<role-name>/apply/main.yaml playbook in each of the individual roles.
+
+----
+ansible-playbook roles/<role-name>/apply/main.yaml
+----
+
+Below are the list of ansible roles that are available. Do checkout the
+individual role's documenation for more information on what they do.
+
+== List of Roles
+
+----
+roles/
+├── cluster-monitoring
+├── etcd-backup
+├── ldap-group-sync
+├── ldap-oauth
+├── ocp-ntp
+├── project-template
+├── service-mesh
+├── splunk-connect
+└── trident
+----
+
+=== Setting up LDAP
+
+==== LDAP oAuth
+The ldap-oauth role handles configuring the default identity providers for the cluster. An OCP cluster can have multiple identity providers eg: LDAP oAuth and a htpasswd file etc. Ours clusters are setup to have just the ldap oauth identiy provider.
+
+[source,bash]
+----
+ansible-playbook roles/ldap-oauth/apply/main.yml -e ldap_bind_password=<ldap-service-account-password>
+----
+[NOTE]
+The extra variable ldap_bind_password will not be required once we have the creds being pulled from secret server
+
+==== LDAP to OCP group synchronisation
+The ldap-group-sync role handles synchornising a whitelisted set of AD groups to the OpenShift cluster.
+
+[source,bash]
+----
+ansible-playbook roles/ldap-group-sync/apply/main.yml
+----
+
+=== Setting up Trident csi for OpenShift 4.x
+The role here is just a skeleton or sample.
+It needs a lot of work to make it a more generic role to be used for any
+tridnt installation. Then again the number of variable or parameters that will
+need to be passed to the role will be quite a lot so ¯\_(ツ)_/¯
+
+[source,bash]
+----
+ansible-playbook roles/trident/apply/main.yml
+----
+
+=== Setting up a cronjob to take regular snapshot of the etcd database
+This role should work out of the box or a regular OCP 4.x cluster.
+It has only been tested on  UPI OCP 4.2 cluster running on vSphere.
+
+The etcd-backup role work on disconnected OpenShift cluster as well.
+YaY
+
+[source,bash]
+----
+ansible-playbook roles/etcd-backup/apply/main.yml
+----
+
+This will create a volume named `demo-etcd-backup`
+and drop the etcd snapshots in there.
+Default frequency is every 5 minutes (useful when testing)
+Please adjust it accordingly
+
+=== Installing OpenShift Service Mesh (ossm)
+This role should work for a regular OCP 4.x cluster and installs servicemesh.
+There are no variables to customise the storage requirements for the some of
+the servicemesh controlplane instances.
+
+You will have to edit the yaml files where they are defined.
+
+[source,bash]
+----
+ansible-playbook roles/service-mesh/apply/main.yml
+----
