@@ -12,9 +12,14 @@ Role Variables
 
 This is an initial take with minimal to no role variables used.
 
+This role should work for a regular OCP 4.x cluster and installs servicemesh.
+There are no variables to customise the storage requirements for the some of
+the servicemesh controlplane instances.
+
+You will have to edit the yaml files where they are defined.
+
 TODO: Should have role defaults for storage rquirements , so that it cab be
 parameterised.
-
 
 Example Playbook
 ----------------
@@ -30,3 +35,11 @@ Including an example of how to use your role.
       include_role:
         name: service-mesh
 ----
+
+applying the role for testing without having to include it in a playbook.
+
+[source,bash]
+----
+ansible-playbook roles/service-mesh/apply/main.yml
+----
+

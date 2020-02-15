@@ -1,0 +1,16 @@
+== NetApp Trident
+
+=== Setting up Trident csi for OpenShift 4.x
+The role here is just a skeleton or sample.
+It needs a lot of work to make it a more generic role to be used for any
+tridnt installation. Then again the number of variable or parameters that will
+need to be passed to the role will be quite a lot so ¯\_(ツ)_/¯
+
+[source,bash]
+----
+ansible-playbook roles/trident/apply/main.yml
+----
+
+=== TODO
+
+Need to update this readme.
