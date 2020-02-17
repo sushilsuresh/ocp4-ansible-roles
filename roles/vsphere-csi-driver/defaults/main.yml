@@ -31,7 +31,7 @@ vsphere_vcenters:
     # instead of user / password you could also override the secret-name
     # secret-name:
 
-vsphere_zoning: true
+vsphere_cns_topology_aware: true
 
 vsphere_zoning_labels:
   region: ocp-region

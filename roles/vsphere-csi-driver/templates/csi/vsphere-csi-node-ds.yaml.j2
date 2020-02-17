@@ -2,7 +2,7 @@ kind: DaemonSet
 apiVersion: apps/v1
 metadata:
   name: vsphere-csi-node
-  namespace: kube-system
+  namespace: {{ vsphere_namespace }}
 spec:
   selector:
     matchLabels:
@@ -16,6 +16,7 @@ spec:
         role: vsphere-csi
     spec:
       dnsPolicy: "Default"
+      serviceAccountName: vsphere-csi-controller
       containers:
         - name: node-driver-registrar
           image: quay.io/k8scsi/csi-node-driver-registrar:v1.1.0
@@ -53,9 +54,11 @@ spec:
               value: "node"
             - name: X_CSI_SPEC_REQ_VALIDATION
               value: "false"
+{% if vsphere_cns_topology_aware %}
             # needed only for topology aware setups
-            #- name: VSPHERE_CSI_CONFIG
-            #  value: "/etc/cloud/csi-vsphere.conf" # here csi-vsphere.conf is the name of the file used for creating secret using "--from-file" flag
+            - name: VSPHERE_CSI_CONFIG
+              value: "/etc/cloud/csi-vsphere.conf" # here csi-vsphere.conf is the name of the file used for creating secret using "--from-file" flag
+{% endif %}
           args:
             - "--v=4"
           securityContext:
@@ -64,10 +67,12 @@ spec:
               add: ["SYS_ADMIN"]
             allowPrivilegeEscalation: true
           volumeMounts:
+{% if vsphere_cns_topology_aware %}
             # needed only for topology aware setups
-            #- name: vsphere-config-volume
-            #  mountPath: /etc/cloud
-            #  readOnly: true
+            - name: vsphere-config-volume
+              mountPath: /etc/cloud
+              readOnly: true
+{% endif %}
             - name: plugin-dir
               mountPath: /csi
             - name: pods-mount-dir
@@ -100,10 +105,12 @@ spec:
             - name: plugin-dir
               mountPath: /csi
       volumes:
+{% if vsphere_cns_topology_aware %}
         # needed only for topology aware setups
-        #- name: vsphere-config-volume
-        #  secret:
-        #    secretName: vsphere-config-secret
+        - name: vsphere-config-volume
+          secret:
+            secretName: vsphere-config-secret
+{% endif %}
         - name: registration-dir
           hostPath:
             path: /var/lib/kubelet/plugins_registry

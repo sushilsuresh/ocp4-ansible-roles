@@ -13,8 +13,8 @@ datacenters = "{{ vcenter.datacenters|join(',') }}"
 {% endfor %}
 {% endfor %}
 
+{% if vsphere_cns_topology_aware %}
 # For Zone Support (if enabled)
-{% if vsphere_zoning %}
 [Labels]
 {% for key, value in vsphere_zoning_labels.items() %}
 {{ key }} = {{ value }}

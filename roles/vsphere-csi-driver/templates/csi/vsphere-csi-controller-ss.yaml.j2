@@ -1,8 +1,9 @@
+# Source: https://raw.githubusercontent.com/kubernetes-sigs/vsphere-csi-driver/master/manifests/1.14/deploy/vsphere-csi-controller-ss.yaml
 kind: StatefulSet
 apiVersion: apps/v1
 metadata:
   name: vsphere-csi-controller
-  namespace: kube-system
+  namespace: {{ vsphere_namespace }}
 spec:
   serviceName: vsphere-csi-controller
   replicas: 1
@@ -43,13 +44,13 @@ spec:
           lifecycle:
             preStop:
               exec:
-                command: ["/bin/sh", "-c", "rm -rf /var/lib/csi/sockets/pluginproxy/csi.vsphere.vmware.com"]
+                command: ["/bin/sh", "-c", "rm -rf /var/lib/kubelet/plugins_registry/csi.vsphere.vmware.com"]
           args:
             - "--v=4"
           imagePullPolicy: "Always"
           env:
             - name: CSI_ENDPOINT
-              value: unix:///var/lib/csi/sockets/pluginproxy/csi.sock
+              value: unix:///var/lib/kubelet/plugins_registry/csi.sock
             - name: X_CSI_MODE
               value: "controller"
             - name: VSPHERE_CSI_CONFIG
@@ -58,7 +59,7 @@ spec:
             - mountPath: /etc/cloud
               name: vsphere-config-volume
               readOnly: true
-            - mountPath: /var/lib/csi/sockets/pluginproxy/
+            - mountPath: /var/lib/kubelet/plugins_registry/
               name: socket-dir
           ports:
             - name: healthz
@@ -78,9 +79,9 @@ spec:
             - "--csi-address=$(ADDRESS)"
           env:
             - name: ADDRESS
-              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+              value: /var/lib/kubelet/plugins_registry/csi.sock
           volumeMounts:
-            - mountPath: /var/lib/csi/sockets/pluginproxy/
+            - mountPath: /var/lib/kubelet/plugins_registry/
               name: socket-dir
         - name: vsphere-syncer
           image: gcr.io/cloud-provider-vsphere/csi/release/syncer:v1.0.2
@@ -116,7 +117,7 @@ spec:
             secretName: vsphere-config-secret
         - name: socket-dir
           hostPath:
-            path: /var/lib/csi/sockets/pluginproxy/csi.vsphere.vmware.com
+            path: /var/lib/kubelet/plugins_registry/csi.vsphere.vmware.com
             type: DirectoryOrCreate
 ---
 apiVersion: storage.k8s.io/v1beta1
