@@ -1,7 +1,7 @@
 [Global]
 cluster-id = "{{ vsphere_cluster_id }}"
 {% for key, value in vsphere_global_conf.items() %}
-{% if key not in ['secret-name'] %}
+{% if key not in ['secret_name'] %}
 {{ key }} = {{ value }}
 {% endif %}"
 {% endfor %}

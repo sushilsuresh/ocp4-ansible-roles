@@ -1,6 +1,9 @@
 [Global]
 {% for key, value in vsphere_global_conf.items() %}
-{{ key }} = {{ value }}
+{% if key == "insecure_flag" %}insecure-flag = {{ value }}
+{% elif key == "secret_name" %}secret-name = {{ value }}
+{% else %}{{ key }} = {{ value }}
+{% endif %}
 {% endfor %}
 
 {% for vcenter in vsphere_vcenters %}

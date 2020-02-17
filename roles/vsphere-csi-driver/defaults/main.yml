@@ -10,8 +10,8 @@ vsphere_cluster_id: "cluster01"
 # ofcourse you override it.
 vsphere_global_conf:
   port: "443"
-  insecure-flag: "true"
-  secret-name: "vsphere-creds"
+  insecure_flag: "true"
+  secret_name: "vsphere-creds"
 
 vsphere_vcenters:
   - name: vcenter1.example.com # must be a reachable FQDN / use IP address
@@ -29,7 +29,7 @@ vsphere_vcenters:
     user: "<username>"            # override global username for this vcenter
     password: "<password>"        # override global password for this vcenter
     # instead of user / password you could also override the secret-name
-    # secret-name:
+    # secret_name:
 
 vsphere_cns_topology_aware: true
 

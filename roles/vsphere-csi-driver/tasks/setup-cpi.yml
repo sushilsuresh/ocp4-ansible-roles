@@ -6,10 +6,19 @@
     kind: Node
   register: reg_nodes
 
+- name: generate cpi-vsphere.conf
+  template:
+    src: cpi/cpi-vsphere.conf.j2
+    dest: "{{ vsphere_cpi_tmpdir }}/cpi-vsphere.conf"
+   
+
 - name: Create a ConfigMap for vSphere - CPI
   k8s:
     state: present
     definition: "{{ lookup('template', 'cpi/cpi-configmap.yaml.j2') }}"
+
+- debug:
+    var: vsphere_global_conf
 
 - name: Create a CPI secret
   k8s:
@@ -23,7 +32,7 @@
   # Also need to test the CPI/CSI driver without regions/zone before
   # we perform a conditional include
   #############################################################################
-- name: Mark all the nodes wih taints to indicate that they are unitialized
+- name: Mark all the nodes with taints to indicate that they are unitialized
   command: oc adm taint nodes {{ ocp_node }} node.cloudprovider.kubernetes.io/uninitialized=true:NoSchedule
   loop: "{{ ocp_nodes }}"
   loop_control:
@@ -93,7 +102,7 @@
 - name: Generate vsphere-cloud-controller-manager-ds.yaml
   template:
     src: cpi/vsphere-cloud-controller-manager-ds.yaml.j2
-    dest: "{{ vsphere_cpi_tmpdir }}/vsphere-cloud-controller-manager-ds.yaml.j2"
+    dest: "{{ vsphere_cpi_tmpdir }}/vsphere-cloud-controller-manager-ds.yaml"
 
 #- name: Apply vsphere-cloud-controller-manager-ds.yaml
 #  command: oc apply -f {{ vsphere_cpi_tmpdir }}/vsphere-cloud-controller-manager-ds.yaml"
