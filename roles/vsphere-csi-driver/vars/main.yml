@@ -1,0 +1,5 @@
+---
+# vars file for vsphere-csi-driver
+
+vsphere_cpi_tmpdir: "{{ inventory_dir }}/tmp/vsphere-cpi"
+vsphere_csi_tmpdir: "{{ inventory_dir }}/tmp/vsphere-csi"

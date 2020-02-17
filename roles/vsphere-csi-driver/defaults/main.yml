@@ -1,0 +1,38 @@
+---
+# defaults file for vsphere-csi-driver
+#
+vsphere_namespace: vsphere
+vsphere_username: "<username>"
+vsphere_password: "<password>"
+vsphere_cluster_id: "cluster01"
+
+# The settings defined in global conf will be inheritted by all vcenters unless
+# ofcourse you override it.
+vsphere_global_conf:
+  port: "443"
+  insecure_flag: "true"
+  secret_name: "vsphere-creds"
+
+vsphere_vcenters:
+  - name: vcenter1.example.com # must be a reachable FQDN / use IP address
+    datacenters:  # List of DCs in vcenter where OCP nodes may be running
+      - DFW
+      - SEA
+    # remianing setting are inheritted from the vsphere_global_conf
+  - name: vcenter2.example.com
+    datacenters:
+      - YUL
+      - YYZ
+      - YTZ
+    port:  "443"                # override global port setting for this vcenter
+    insecure-flag: "false"      # override global insecure flag
+    user: "<username>"            # override global username for this vcenter
+    password: "<password>"        # override global password for this vcenter
+    # instead of user / password you could also override the secret-name
+    # secret-name:
+
+vsphere_zoning: true
+
+vsphere_zoning_labels:
+  region: ocp-region
+  zone: ocp-zone

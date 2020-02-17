@@ -1,0 +1,16 @@
+---
+# tasks file for vsphere-csi-driver
+#
+# Source Ref for the below setup
+# https://cloud-provider-vsphere.sigs.k8s.io/tutorials/kubernetes-on-vsphere-with-kubeadm.html
+# https://cloud-provider-vsphere.sigs.k8s.io/tutorials/deploying_cpi_and_csi_with_multi_dc_vc_aka_zones.html
+# https://github.com/sa-ne/openshift4-vmware-upi
+
+- name: Create Namespace
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'namespace.yaml.j2') }}"
+
+- include_tasks: setup-cpi.yml
+
+#- include_tasks: setup-csi.yml

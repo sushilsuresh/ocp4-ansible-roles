@@ -1,0 +1,23 @@
+[Global]
+{% for key, value in vsphere_global_conf.items() %}
+{{ key }} = {{ value }}
+{% endfor %}
+
+{% for vcenter in vsphere_vcenters %}
+[VirtualCenter "{{ vcenter.name }}"]
+datacenters = "{{ vcenter.datacenters|join(',') }}"
+{% for key, value in vcenter.items() %}
+{% if key not in ['name', 'datacenters'] %}
+{{ key }} = "{{ value }}"
+{% endif %}
+{% endfor %}
+{% endfor %}
+
+# For Zone Support (if enabled)
+{% if vsphere_zoning %}
+[Labels]
+{% for key, value in vsphere_zoning_labels.items() %}
+{{ key }} = {{ value }}
+{% endfor %}
+{% endif %}
+

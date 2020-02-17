@@ -1,0 +1,19 @@
+# Configure/Setup the CSI componet of the VMWare driver.
+
+- name: Create a CSI secret
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'csi/vsphere-config-secret.yaml.j2') }}"
+
+
+
+  # This is rquired since we are deploying to a new namespace called vsphere
+- name: Create additional RoleBindings required for OCP
+  command: >-
+    oc create rolebinding -n kube-system vsphere-csi-kubesystem
+    --role=extension-apiserver-authentication-reader
+    --serviceaccount={{ vsphere_namespace }}:vsphere-csi-controller
+
+- name: Add privieged SCC to the service account.
+  command: oc adm policy add-scc-to-user privileged -z vsphere-csi-controller
+

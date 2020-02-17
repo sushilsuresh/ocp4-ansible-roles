@@ -1,0 +1,27 @@
+[Global]
+cluster-id = "{{ vsphere_cluster_id }}"
+{% for key, value in vsphere_global_conf.items() %}
+{% if key not in ['secret_name'] %}
+{{ key }} = {{ value }}
+{% endif %}"
+{% endfor %}
+
+{% for vcenter in vsphere_vcenters %}
+[VirtualCenter "{{ vcenter.name }}"]
+datacenters = "{{ vcenter.datacenters|join(',') }}"
+user = "{{ vcenter.user | default(vsphere_username) }}"
+password = "{{ vcenter.password | default(vsphere_password) }}"
+{% for key, value in vcenter.items() %}
+{% if key not in ['name', 'datacenters', 'user', 'password'] %}
+{{ key }} = "{{ value }}"
+{% endif %}
+{% endfor %}
+{% endfor %}
+
+# For Zone Support (if enabled)
+{% if vsphere_zoning %}
+[Labels]
+{% for key, value in vsphere_zoning_labels.items() %}
+{{ key }} = {{ value }}
+{% endfor %}
+{% endif %}

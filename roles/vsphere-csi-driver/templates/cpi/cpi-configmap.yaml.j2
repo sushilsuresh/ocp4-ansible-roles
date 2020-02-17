@@ -1,0 +1,7 @@
+piVersion: v1
+kind: ConfigMap
+metadata:
+  name: "cloud-config"
+  namespace: "{{ vsphere_namespace }}"
+data:
+  vsphere.conf: {{ lookup('template', 'cpi/cpi-vsphere.conf.j2') | to_json }}
