@@ -14,7 +14,7 @@
 - name: Create a CPI secret
   k8s:
     state: present
-    definition: "{{ lookup('template', 'cpi/cpi-gobal-secret.yaml.j2') }}"
+    definition: "{{ lookup('template', 'cpi/cpi-global-secret.yaml.j2') }}"
 
   #############################################################################
   # Required for making use of Zones and regions

@@ -10,8 +10,8 @@ vsphere_cluster_id: "cluster01"
 # ofcourse you override it.
 vsphere_global_conf:
   port: "443"
-  insecure_flag: "true"
-  secret_name: "vsphere-creds"
+  insecure-flag: "true"
+  secret-name: "vsphere-creds"
 
 vsphere_vcenters:
   - name: vcenter1.example.com # must be a reachable FQDN / use IP address
