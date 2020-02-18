@@ -1,10 +1,8 @@
 [Global]
 {% for key, value in vsphere_global_conf.items() %}
-{% if key == "insecure_flag" %}insecure-flag = {{ value }}
-{% elif key == "secret_name" %}secret-name = {{ value }}
-{% else %}{{ key }} = {{ value }}
-{% endif %}
+{{ key }} = {{ value }}
 {% endfor %}
+
 
 {% for vcenter in vsphere_vcenters %}
 [VirtualCenter "{{ vcenter.name }}"]
@@ -14,6 +12,7 @@ datacenters = "{{ vcenter.datacenters|join(',') }}"
 {{ key }} = "{{ value }}"
 {% endif %}
 {% endfor %}
+
 {% endfor %}
 
 {% if vsphere_cns_topology_aware %}
