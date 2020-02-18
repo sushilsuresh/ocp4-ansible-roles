@@ -14,3 +14,6 @@
 - include_tasks: setup-cpi.yml
 
 - include_tasks: setup-csi.yml
+
+- name: Create a default storage class
+  command: oc apply -f {{ role_path }}/files/csi-topologyaware-storageclass.yaml

@@ -1,6 +1,10 @@
 [Global]
 {% for key, value in vsphere_global_conf.items() %}
+{% if key == 'secret-name' %}
+{{ key }} = cpi-{{ value }}
+{% else %}
 {{ key }} = {{ value }}
+{% endif %}
 {% endfor %}
 secret-namespace = {{ vsphere_namespace }}
 
