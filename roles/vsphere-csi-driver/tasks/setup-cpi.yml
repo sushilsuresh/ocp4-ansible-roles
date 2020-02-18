@@ -81,8 +81,7 @@
     name: privileged
   register: reg_privi_users
 
-# - name: Add privileged SCC to the cloud-controller manager service account.
-- name: Grant privileged role to the backup user
+- name: Add privileged SCC to the cloud-controller manager service account.
   command: "oc adm policy add-scc-to-user privileged {{ ccm_user }}"
   when:
     - ccm_user not in privileged_users

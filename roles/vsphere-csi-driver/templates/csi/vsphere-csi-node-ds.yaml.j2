@@ -109,7 +109,7 @@ spec:
         # needed only for topology aware setups
         - name: vsphere-config-volume
           secret:
-            secretName: vsphere-config-secret
+            secretName: csi-{{ vsphere_global_conf["secret-name"] }}
 {% endif %}
         - name: registration-dir
           hostPath:

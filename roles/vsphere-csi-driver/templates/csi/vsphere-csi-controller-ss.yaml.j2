@@ -114,7 +114,7 @@ spec:
       volumes:
         - name: vsphere-config-volume
           secret:
-            secretName: vsphere-config-secret
+            secretName: csi-{{ vsphere_global_conf["secret-name"] }}
         - name: socket-dir
           hostPath:
             path: /var/lib/kubelet/plugins_registry/csi.vsphere.vmware.com

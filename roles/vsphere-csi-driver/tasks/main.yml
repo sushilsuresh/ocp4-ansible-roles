@@ -13,4 +13,4 @@
 
 - include_tasks: setup-cpi.yml
 
-#- include_tasks: setup-csi.yml
+- include_tasks: setup-csi.yml
