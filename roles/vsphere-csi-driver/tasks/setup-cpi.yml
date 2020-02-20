@@ -33,14 +33,11 @@
     ocp_nodes: "{{ reg_nodes | json_query('resources[*].metadata.name') }}"
     taint_query: "resources[?metadata.name=='{{ ocp_node }}'].spec.taints[].key"
     node_taints: "{{ reg_nodes | json_query(taint_query) }}"
-    label_query: "resources[?metadata.name=='{{ ocp_node }}'].metadata.labels"
-    node_labels: "{{ (reg_nodes | json_query(label_query))[0].keys() | list }}"
+    provider_query: "resources[?metadata.name=='{{ ocp_node }}'].spec.providerID"
+    provider_id: "{{ (reg_nodes | json_query(provider_query)) }}"
   when:
     - not ( node_taints is contains("node.cloudprovider.kubernetes.io/uninitialized") )
-    - not ( node_labels is contains("failure-domain.beta.kubernetes.io/region") or
-            node_labels is contains("failure-domain.beta.kubernetes.io/zone")
-          )
-
+    - not ( provider_id )
 - name: Create cloud-controller-manager roles
   command: oc apply -f {{ role_path }}/files/cpi/cloud-controller-manager-roles.yaml
   register: vsphere_ccm_roles

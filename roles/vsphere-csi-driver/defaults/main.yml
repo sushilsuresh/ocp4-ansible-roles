@@ -4,14 +4,21 @@
 vsphere_namespace: vsphere
 vsphere_username: "<username>"
 vsphere_password: "<password>"
+vsphere_secret_name: "vsphere-creds"
 vsphere_cluster_id: "cluster01"
+
+vsphere_container_images:
+  cpi:
+    manager: "latest"
+  csi:
+    driver: "v1.0.2"
+    syncer: "v1.0.2"
 
 # The settings defined in global conf will be inheritted by all vcenters unless
 # ofcourse you override it.
 vsphere_global_conf:
   port: "443"
   insecure-flag: "true"
-  secret-name: "vsphere-creds"
 
 vsphere_vcenters:
   - name: vcenter1.example.com # must be a reachable FQDN / use IP address
