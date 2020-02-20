@@ -1,0 +1,17 @@
+# Post install, when no
+- name: Label all the woker nodes with workload=generic
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: "{{ item.metadata.name }}"
+        labels:
+          workload: "generic"
+  when:
+    - item.metadata.name | search("worker")
+    - item["metadata"]["labels"]["workload"] is not defined
+  loop_control:
+    label: "{{ item.metadata.name }}"
+  loop: "{{ ocp_nodes.resources }}"

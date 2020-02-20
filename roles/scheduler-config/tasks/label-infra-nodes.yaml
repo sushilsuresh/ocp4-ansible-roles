@@ -1,0 +1,22 @@
+- name: Add infra role to the nodes that have infra in it's name
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: "{{ item.metadata.name }}"
+        labels:
+          node-role.kubernetes.io/infra: ""
+          workload: "infra"
+      spec:
+        taints:
+        - effect: "PreferNoSchedule"
+          key: "node-role.kubernetes.io/infra"
+  when:
+    - item.metadata.name | search("infra")
+    - item["metadata"]["labels"]["node-role.kubernetes.io/infra"] is not defined or
+      item["spec"]["taints"] is not defined
+  loop_control:
+    label: "{{ item.metadata.name }}"
+  loop: "{{ ocp_nodes.resources }}"
