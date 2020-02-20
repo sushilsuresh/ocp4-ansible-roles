@@ -1,0 +1,6 @@
+---
+- include_tasks: gather-nodes.yaml
+- include_tasks: label-infra-nodes.yaml
+- include_tasks: label-worker-nodes.yaml
+- include_tasks: configure-scheduler.yaml
+- include_tasks: move-infra-workload.yaml
