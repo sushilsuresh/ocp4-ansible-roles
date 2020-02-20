@@ -1,0 +1,103 @@
+# Configure/Setup CPI compoent of the vmware driver
+
+- name: Get OCP nodes
+  k8s_facts:
+    api_version: v1
+    kind: Node
+  register: reg_nodes
+
+- name: Create a ConfigMap for vSphere - CPI
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'cpi/cpi-configmap.yaml.j2') }}"
+
+- name: Create a CPI secret
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'cpi/cpi-global-secret.yaml.j2') }}"
+
+  #############################################################################
+  # Required for making use of Zones and regions
+  # Should carve this out a seperate include and inlude only if zone/regions
+  # are required
+  # Also need to test the CPI/CSI driver without regions/zone before
+  # we perform a conditional include
+  #############################################################################
+- name: Mark all the nodes with taints to indicate that they are unitialized
+  command: oc adm taint nodes {{ ocp_node }} node.cloudprovider.kubernetes.io/uninitialized=true:NoSchedule
+  loop: "{{ ocp_nodes }}"
+  loop_control:
+    loop_var: ocp_node
+    label: "{{ ocp_node }}"
+  vars:
+    ocp_nodes: "{{ reg_nodes | json_query('resources[*].metadata.name') }}"
+    taint_query: "resources[?metadata.name=='{{ ocp_node }}'].spec.taints[].key"
+    node_taints: "{{ reg_nodes | json_query(taint_query) }}"
+    label_query: "resources[?metadata.name=='{{ ocp_node }}'].metadata.labels"
+    node_labels: "{{ (reg_nodes | json_query(label_query))[0].keys() | list }}"
+  when:
+    - not ( node_taints is contains("node.cloudprovider.kubernetes.io/uninitialized") )
+    - not ( node_labels is contains("failure-domain.beta.kubernetes.io/region") or
+            node_labels is contains("failure-domain.beta.kubernetes.io/zone")
+          )
+
+- name: Create cloud-controller-manager roles
+  command: oc apply -f {{ role_path }}/files/cpi/cloud-controller-manager-roles.yaml
+  register: vsphere_ccm_roles
+  changed_when: vsphere_ccm_roles.stdout.find(" unchanged") == -1
+
+- name: Ensure tmpdir exists for vsphere cpi
+  file:
+    path: "{{ vsphere_cpi_tmpdir }}"
+    state: directory
+
+- name: Generate controller-manager role bindings yaml
+  template:
+    src: cpi/cloud-controller-manager-role-bindings.yaml.j2
+    dest: "{{ vsphere_cpi_tmpdir }}/cloud-controller-manager-role-bindings.yaml"
+  
+- name: Apply controller-manager role bindings yaml
+  command: oc apply -f {{ vsphere_cpi_tmpdir }}/cloud-controller-manager-role-bindings.yaml
+  register: vsphere_ccm_role_bindings
+  changed_when: vsphere_ccm_role_bindings.stdout.find(" configured") == -1
+
+  # This is rquired since we are deploying the CPI/CSI driver to a diferent
+  # namespace , other than kube-system. Upstreap documentation assumes k8s
+  # and deploys the CPI/CSI resrouces/objects to the kube-system namespace
+- name: Create additional RoleBindings required for OpenShift
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'cpi/vsphere-cpi-kube-system_rolebinding.yaml.j2') }}"
+# Equivalent to running the below command. Moved it to use the k8s module ot make it 
+# idempotent.
+#    oc create rolebinding -n kube-system vsphere-cpi-kubesystem \
+#    --role=extension-apiserver-authentication-reader \
+#    --serviceaccount={{ vsphere_namespace }}:cloud-controller-manager
+
+- name: get privileged SecurityContext Object
+  k8s_facts:
+    api_version: security.openshift.io/v1
+    kind: SecurityContextConstraints
+    name: privileged
+  register: reg_privi_users
+
+- name: Add privileged SCC to the cloud-controller manager service account.
+  command: "oc adm policy add-scc-to-user privileged {{ ccm_user }}"
+  when:
+    - ccm_user not in privileged_users
+  vars:
+    privileged_users: "{{ reg_privi_users.resources[0].users }}"
+    ccm_user : 'system:serviceaccount:{{ vsphere_namespace }}:cloud-controller-manager'
+
+- name: Generate vsphere-cloud-controller-manager-ds.yaml
+  template:
+    src: cpi/vsphere-cloud-controller-manager-ds.yaml.j2
+    dest: "{{ vsphere_cpi_tmpdir }}/vsphere-cloud-controller-manager-ds.yaml"
+
+- name: Apply vsphere-cloud-controller-manager-ds.yaml
+  command: oc apply -f {{ vsphere_cpi_tmpdir }}/vsphere-cloud-controller-manager-ds.yaml
+  register: reg_vsphere_ccm_ds
+  changed_when: reg_vsphere_ccm_ds.stdout.find(" unchanged") == -1
+
+# - name: make sure the node taints are removed when the nodes were initialised
+# TODO: implement this. For now, we are going to assume.

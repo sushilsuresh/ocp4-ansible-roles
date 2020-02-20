@@ -1,0 +1,35 @@
+== Setting up VMware's vSphere CSI driver with OpenShift
+
+Primary usecase where this was developed and tested for.
+
+----
++---------------------------+  +---------------------------+
+|           SECURE          |  |            DMZ            |
+|                           |  |                           |
+|                           |  |                           |
+|       ESX Cluster A       |  |       ESX Cluster B       |
+|   +--------+ +--------+   |  |   +--------+ +--------+   |
+|   | Host 1 | | Host n |   |  |   | Host 1 | | Host n |   |
+|   ++-------+ +-------++   |  |   ++-------+ +-------++   |
+|    |                 |    |  |    |                 |    |
+|    |                 |    |  |    |                 |    |
+|    |   +--------+    |    |  |    |   +--------+    |    |
+|    +---+ vSAN 1 +----+    |  |    +---+ vSAN 1 +----+    |
+|        +--------+         |  |        +--------+         |
+|        Datastore          |  |        Datastore          |
+|                           |  |                           |
+|                           |  |                           |
++-------------+-------------+  +-------------+-------------+
+              |                              |
+              |                              |
+              |                              |
+              |          +---------+         |
+              +----------+ vCenter +---------+
+                         +---------+
+----
+
+
+TODO:
+
+  - Documentation is a work in progress :-)
+  - Test / Validate the role works well when zoning is enabled

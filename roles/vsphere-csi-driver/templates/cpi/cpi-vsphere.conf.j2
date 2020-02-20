@@ -1,0 +1,30 @@
+[Global]
+{% for key, value in vsphere_global_conf.items() %}
+{% if key == 'secret-name' %}
+{{ key }} = cpi-{{ value }}
+{% else %}
+{{ key }} = {{ value }}
+{% endif %}
+{% endfor %}
+secret-namespace = {{ vsphere_namespace }}
+
+
+{% for vcenter in vsphere_vcenters %}
+[VirtualCenter "{{ vcenter.name }}"]
+datacenters = "{{ vcenter.datacenters|join(',') }}"
+{% for key, value in vcenter.items() %}
+{% if key not in ['name', 'datacenters'] %}
+{{ key }} = "{{ value }}"
+{% endif %}
+{% endfor %}
+
+{% endfor %}
+
+{% if vsphere_cns_topology_aware %}
+# For Zone Support (if enabled)
+[Labels]
+{% for key, value in vsphere_zoning_labels.items() %}
+{{ key }} = {{ value }}
+{% endfor %}
+{% endif %}
+

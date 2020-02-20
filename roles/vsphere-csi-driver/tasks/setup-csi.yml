@@ -1,0 +1,65 @@
+# Configure/Setup the CSI componet of the VMWare driver.
+
+- name: Create a CSI secret
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'csi/csi-secret.yaml.j2') }}"
+
+- name: Ensure tmpdir exists for vsphere csi
+  file:
+    path: "{{ vsphere_csi_tmpdir }}"
+    state: directory
+
+- name: Generate csi controller rbac yaml
+  template:
+    src: csi/vsphere-csi-controller-rbac.yaml.j2
+    dest: "{{ vsphere_csi_tmpdir }}/vsphere-csi-controller-rbac.yaml"
+
+- name: Apply csi controller rbac yaml
+  command: oc apply -f {{ vsphere_csi_tmpdir }}/vsphere-csi-controller-rbac.yaml
+  register: vsphere_csi_role_bindings
+  changed_when: vsphere_csi_role_bindings.stdout.find(" configured") == -1
+
+  # This is rquired since we are deploying the CPI/CSI driver to a diferent
+  # namespace , other than kube-system. Upstreap documentation assumes k8s
+  # and deploys the CPI/CSI resrouces/objects to the kube-system namespace
+- name: Create additional RoleBindings required for OpenShift
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'csi/vsphere-csi-kube-system_rolebinding.yaml.j2') }}"
+
+- name: get privileged SecurityContext Object
+  k8s_facts:
+    api_version: security.openshift.io/v1
+    kind: SecurityContextConstraints
+    name: privileged
+  register: reg_privi_users
+
+- name: Add privileged SCC to the vsphere-csi-controller manager service account.
+  command: "oc adm policy add-scc-to-user privileged {{ csi_user }}"
+  when:
+    - csi_user not in privileged_users
+  vars:
+    privileged_users: "{{ reg_privi_users.resources[0].users }}"
+    csi_user : 'system:serviceaccount:{{ vsphere_namespace }}:vsphere-csi-controller'
+
+- name: Generate vsphere csi controller statefulset yaml
+  template:
+    src: csi/vsphere-csi-controller-ss.yaml.j2
+    dest: "{{ vsphere_csi_tmpdir }}/vsphere-csi-controller-ss.yaml"
+
+- name: Apply vsphere csi statefulset yaml
+  command: oc apply -f {{ vsphere_csi_tmpdir }}/vsphere-csi-controller-ss.yaml
+  register: vsphere_csi_ss
+  changed_when: vsphere_csi_ss.stdout.find(" unchanged") == -1
+
+- name: Generate vsphere csi node daemonset yaml
+  template:
+    src: csi/vsphere-csi-node-ds.yaml.j2
+    dest: "{{ vsphere_csi_tmpdir }}/vsphere-csi-node-ds.yaml"
+
+- name: Apply vsphere csi node daemonset yaml
+  command: oc apply -f {{ vsphere_csi_tmpdir }}/vsphere-csi-node-ds.yaml
+  register: vsphere_csi_ds
+  changed_when: vsphere_csi_ds.stdout.find(" unchanged") == -1
+
