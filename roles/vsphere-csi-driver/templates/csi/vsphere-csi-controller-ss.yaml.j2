@@ -90,7 +90,7 @@ spec:
           imagePullPolicy: "Always"
           env:
             - name: FULL_SYNC_INTERVAL_MINUTES
-              value: "30"
+              value: "{{ full_sync_interval_minutes }}"
             - name: VSPHERE_CSI_CONFIG
               value: "/etc/cloud/csi-vsphere.conf"
           volumeMounts:

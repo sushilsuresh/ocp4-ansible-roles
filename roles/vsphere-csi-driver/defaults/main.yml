@@ -23,6 +23,13 @@ vsphere_container_images:
     csi_provisioner: "quay.io/k8scsi/csi-provisioner:v1.2.2"
     csi_node_driver_registrar: "quay.io/k8scsi/csi-node-driver-registrar:v1.1.0"
 
+# Controls the frequency at which CSI syncer container will syncronise the vms
+# from vSphere to the cluster. When a new node is added to the cluster the CSI
+# has to sync the new VM's details bteween the vsphere and the OCP cluster.
+# Only after this can pods with storage be sheduled to the new node.
+# The default setting is 30 minutes. (as provided by vmware)
+full_sync_interval_minutes: 30
+
 # The settings defined in global conf will be inheritted by all vcenters unless
 # ofcourse you override it.
 vsphere_global_conf:
