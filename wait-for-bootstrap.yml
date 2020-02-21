@@ -26,6 +26,17 @@
         dest: /tmp/cluster_operators.json
       when: save_json | bool
 
+    - name: Wait for cluster operator api call to be successfull
+      k8s_facts:
+        api_version: config.openshift.io/v1
+        kind: ClusterOperator
+      register: reg_ocp_co
+      ignore_errors: true
+      until:
+        - reg_ocp_co.rc == 0
+      retries: 60 # wait for 1 hour max
+      delay: 60
+
 ###############################################################################
 # I tend to use jmespath_terminal to look at the json output and filter my
 # queries so that I have a working working query when I start using it in
