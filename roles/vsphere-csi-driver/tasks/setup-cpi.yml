@@ -38,21 +38,27 @@
   when:
     - not ( node_taints is contains("node.cloudprovider.kubernetes.io/uninitialized") )
     - not ( provider_id )
-- name: Create cloud-controller-manager roles
-  command: oc apply -f {{ role_path }}/files/cpi/cloud-controller-manager-roles.yaml
-  register: vsphere_ccm_roles
-  changed_when: vsphere_ccm_roles.stdout.find(" unchanged") == -1
 
 - name: Ensure tmpdir exists for vsphere cpi
   file:
     path: "{{ vsphere_cpi_tmpdir }}"
     state: directory
 
+- name: Generate cloud-controller-manager-roles yaml
+  template:
+    src: cpi/cloud-controller-manager-roles.yaml.j2
+    dest: "{{ vsphere_cpi_tmpdir }}/cloud-controller-manager-roles.yaml"
+
+- name: Apply cloud-controller-manager-roles yaml
+  command: oc apply -f {{ vsphere_cpi_tmpdir }}/cloud-controller-manager-roles.yaml
+  register: vsphere_ccm_roles
+  changed_when: vsphere_ccm_roles.stdout.find(" unchanged") == -1
+
 - name: Generate controller-manager role bindings yaml
   template:
     src: cpi/cloud-controller-manager-role-bindings.yaml.j2
     dest: "{{ vsphere_cpi_tmpdir }}/cloud-controller-manager-role-bindings.yaml"
-  
+
 - name: Apply controller-manager role bindings yaml
   command: oc apply -f {{ vsphere_cpi_tmpdir }}/cloud-controller-manager-role-bindings.yaml
   register: vsphere_ccm_role_bindings
@@ -65,8 +71,8 @@
   k8s:
     state: present
     definition: "{{ lookup('template', 'cpi/vsphere-cpi-kube-system_rolebinding.yaml.j2') }}"
-# Equivalent to running the below command. Moved it to use the k8s module ot make it 
-# idempotent.
+# Equivalent to running the below command. Moved it to use the k8s module ot
+# make it idempotent.
 #    oc create rolebinding -n kube-system vsphere-cpi-kubesystem \
 #    --role=extension-apiserver-authentication-reader \
 #    --serviceaccount={{ vsphere_namespace }}:cloud-controller-manager

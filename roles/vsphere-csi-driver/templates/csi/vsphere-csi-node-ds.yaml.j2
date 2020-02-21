@@ -1,3 +1,4 @@
+# Source: https://raw.githubusercontent.com/kubernetes-sigs/vsphere-csi-driver/master/manifests/1.14/deploy/vsphere-csi-node-ds.yaml
 kind: DaemonSet
 apiVersion: apps/v1
 metadata:
@@ -19,7 +20,7 @@ spec:
       serviceAccountName: vsphere-csi-controller
       containers:
         - name: node-driver-registrar
-          image: quay.io/k8scsi/csi-node-driver-registrar:v1.1.0
+          image: {{ vsphere_container_images.csi.csi_node_driver_registrar }}
           lifecycle:
             preStop:
               exec:
@@ -41,7 +42,7 @@ spec:
             - name: registration-dir
               mountPath: /registration
         - name: vsphere-csi-node
-          image: gcr.io/cloud-provider-vsphere/csi/release/driver:{{ vsphere_container_images.csi.driver }}
+          image: {{ vsphere_container_images.csi.driver }}
           imagePullPolicy: "Always"
           env:
             - name: NODE_NAME
@@ -95,7 +96,7 @@ spec:
             periodSeconds: 5
             failureThreshold: 3
         - name: liveness-probe
-          image: quay.io/k8scsi/livenessprobe:v1.1.0
+          image: {{ vsphere_container_images.csi.livenessprobe }}
           args:
             - "--csi-address=$(ADDRESS)"
           env:
