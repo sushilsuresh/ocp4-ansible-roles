@@ -1,0 +1,82 @@
+---
+- name: Wait for OpenShift cluster bootstrap to complete
+  hosts: localhost
+  vars:
+    save_json: false
+  tasks:
+
+###############################################################################
+# NOTE: If you want the debug output to be save , you may want to wait till
+#       The cluster has started to response properly to the "oc get co" command
+#       If the api call itself is failing you wont have a json response back to
+#       save to the file.
+###############################################################################
+
+    - name: Debug run to save json for debuging
+      k8s_facts:
+        api_version: config.openshift.io/v1
+        kind: ClusterOperator
+      register: reg_ocp_co
+      ignore_errors: true
+      when: save_json | bool
+
+    - name: Saving json output to /tmp/cluster_operators.json
+      copy:
+        content: "{{ reg_ocp_co }}"
+        dest: /tmp/cluster_operators.json
+      when: save_json | bool
+
+###############################################################################
+# I tend to use jmespath_terminal to look at the json output and filter my
+# queries so that I have a working working query when I start using it in
+# ansible playbooks. It is no fun debuging json queries by running the actual
+# ansible playbook.
+# Ref: https://github.com/jmespath/jmespath.terminal
+#
+# pip3 install --user jmespath-terminal
+# jpterm /tmp/cluster_operators.json
+###############################################################################
+
+    - name: Wait for all cluster operators to be available
+      k8s_facts:
+        api_version: config.openshift.io/v1
+        kind: ClusterOperator
+      register: reg_ocp_co
+      vars:
+        available_query: "resources[*].status.conditions[?type=='Available'].status"
+        available: "{{ reg_ocp_co | json_query(available_query) | flatten | unique }}"
+        progressing_query: "resources[*].status.conditions[?type=='Progressing'].status"
+        progressing: "{{ reg_ocp_co | json_query(progressing_query) | flatten | unique }}"
+        degraded_query: "resources[*].status.conditions[?type=='Degraded'].status"
+        degraded: "{{ reg_ocp_co | json_query(degraded_query) | flatten | unique }}"
+      until:
+        - available == ['True']
+        - progressing == ['False']
+        - degraded == ['False']
+      retries: 60 # wait for 1 hour max
+      delay: 60
+      ignore_errors: true
+
+###############################################################################
+# What do the queries do ?
+#
+# Step1: Gather all the cluster operators. The json is stord in reg_ocp_co
+#
+# Step2: Gather the status of the "Available" column for all the operators
+#        This is restured as a list within in a list
+#        We flatten the list and filter it through unique
+#        If All the operators have a status of True for the available column
+#        you will end up with
+#        available: ['True']
+#        If even 1 operator has a status of False the resultant list will be
+#        available: ['True', 'False']
+#
+# Step4: we do the same for "Progressing" and "Degraded" columns as well
+#
+# Step5: Loop through ignoring all error until all the cluster operators go
+#        active. Final good state will be
+#        available: ['True'] , progressing: ['False'] , degraded: ['False']
+#
+# You can chain your post install configure playbooks to kick in after this
+# playbook complete.
+###############################################################################

@@ -35,3 +35,32 @@ roles/
 └── trident
 ----
 
+
+== Wait for Cluster Boostrap to Finish
+
+When onboarding team and dong workshops to install OpenShift, it almost goes
+without saying that you will be installing and re-installing the OpenShift
+cluster multiple times. During the intial phases it is great for teams to watch
+the boostrap process tail the logs and and wait for the bootstrap process to
+complete.
+
+I often run `watch oc get co` and wait till all the cluter operators have
+successfully been deployed, before I go about start my post install config
+playbooks.
+
+Adding playbook *wait-for-bootstrap.yml* that will wait for boostrap proces to
+complete. This works great for a OCP 4.3 cluster since all the operators are
+available once a bootstrap completes. In OCP4.2 or earlier the imageregistry
+operator does not become available. You can easily make a few adjustment and
+have this working for OCP 4.2 or earlier clusters as well
+
+----
+ansible-playbook wait-for-bootstrap.yml
+----
+
+OR if you want the json output saved to file to inspect/query/process later.
+
+----
+ansible-playbook wait-for-bootstrap.yml -e save_json=true
+----
+
