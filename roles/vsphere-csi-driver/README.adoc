@@ -32,4 +32,4 @@ Primary usecase where this was developed and tested for.
 TODO:
 
   - Documentation is a work in progress :-)
-  - Test / Validate the role works well when zoning is enabled
+  - Test / Validate the role works well when zoning is disabled
