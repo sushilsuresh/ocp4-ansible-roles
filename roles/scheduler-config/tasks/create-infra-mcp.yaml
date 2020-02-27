@@ -1,0 +1,2 @@
+- name: Create infra MachineConfigPool
+  command: oc apply -f {{ role_path }}/files/infra-mcp.yaml
