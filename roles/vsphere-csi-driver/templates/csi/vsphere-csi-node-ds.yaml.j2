@@ -16,6 +16,9 @@ spec:
         app: vsphere-csi-node
         role: vsphere-csi
     spec:
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
       dnsPolicy: "Default"
       serviceAccountName: vsphere-csi-controller
       containers:
