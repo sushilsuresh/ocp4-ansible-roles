@@ -8,8 +8,8 @@
 ###############################################################################
 # NOTE: If you want the debug output to be save , you may want to wait till
 #       The cluster has started to response properly to the "oc get co" command
-#       If the api call itself is failing you wont have a json response back to
-#       save to the file.
+#       If the api call itself is failing you will not have a json response to
+#       save to file.
 ###############################################################################
 
     - name: Debug run to save json for debuging
@@ -33,7 +33,7 @@
       register: reg_ocp_co
       ignore_errors: true
       until:
-        - reg_ocp_co.rc == 0
+        - reg_ocp_co.rc is not defined
       retries: 60 # wait for 1 hour max
       delay: 60
 
