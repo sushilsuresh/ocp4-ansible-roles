@@ -2,17 +2,24 @@
 
 === Taske performe in this role
 
-The blow key tasks are performed
+The below key tasks are performed
 
-* Label infra nodes with
-** Add node role of infra
-** Add label workload=infra
-* Taint the infra ndoes to prevent regular workload to land on it
+* Label infra nodes with the following labels
+** node-role.kubernetes.io/infra
+** workload=infra
+* Taint the infra nodes to prevent regular workload to land on it
 ** Adds taint to PreferNoSchedule on the infra nodes
-* Label worker nodes
-** Add label workload=generic
+** This taint doesn't absolutely prevent a regular workload from landing on the
+   infra nodes
+* Label worker nodes with the following label
+** workload=generic
 * Make sure master is unschedulable
 * Move default ingress router to the infra nodes
+* Create a new MachineConfigPool (MCP) for infra nodes.
+** This will allow us to remove the worker node-role from the infra nodes.
+** the infra MCP inherits form the worker nodes.
+** This MCP is requried to make sure that when the cluster is upgraded the
+   infra nodes are also upgraded.
 
 [source,bash]
 ----
@@ -20,5 +27,7 @@ ansible-playbook roles/scheduler-config/apply/main.yml
 ----
 
 === TODO
+* Need to update this readme.
+* We are creating a new MCP. We should possibly wait for all the machine
+  configs to be rendered and pushed out before we move on to other roles.
 
-Need to update this readme.
