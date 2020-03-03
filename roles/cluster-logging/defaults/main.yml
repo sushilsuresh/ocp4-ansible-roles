@@ -1,0 +1,6 @@
+---
+# defaults file for cluster-logging
+
+clo_elastic_storage_size: "500Gi"
+clo_elastic_redundancyPolicy: "SingleRedundancy"
+clo_elastic_nodeCount: 3
