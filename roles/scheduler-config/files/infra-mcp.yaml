@@ -6,10 +6,10 @@ spec:
   machineConfigSelector:
     matchExpressions:
       - key: machineconfiguration.openshift.io/role
-      operator: In
-      values:
-        - worker
-        - infra
+        operator: In
+        values:
+          - worker
+          - infra
   nodeSelector:
     matchLabels:
       node-role.kubernetes.io/infra: ""
