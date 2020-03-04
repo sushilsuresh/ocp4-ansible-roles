@@ -13,6 +13,11 @@ image_registry_size: 100Gi
 image_regitry_emptydir: false
 ```
 
+Setting *image_regitry_emptydir: true* , will configure ImageRegistry to use *emptyDir* storage.
+
+By default this vairable is set to flase, and will update sotrage to {"pvc":{"claim":""}}
+This will trigger the image registry operator to make a new claim and bind to it.
+
 === Example Usage
 Example invocation of the role in a playbook
 
