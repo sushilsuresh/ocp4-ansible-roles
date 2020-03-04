@@ -1,0 +1,30 @@
+---
+# tasks file for ingress-tls-cert
+
+- name: Create secret for holding ingress ssl cert
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      type: kubernetes.io/tls
+      metadata:
+        name: "{{ ocp_cluster_id }}-cert"
+        namespace: openshift-ingress
+      data:
+        tls.crt: "{{ ingress_certs | b64encode }}"
+        tls.key: "{{ ingress_key | b64encode }}"
+
+- name: Patch the default ingress router
+  k8s:
+    state: present
+    definition:
+      apiVersion: operator.openshift.io/v1
+      kind: IngressController
+      metadata:
+        name: default
+        namespace: openshift-ingress-operator
+      spec:
+        defaultCertificate:
+          name: "{{ ocp_cluster_id }}-cert"
+        replicas: 3

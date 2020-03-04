@@ -1,0 +1,5 @@
+---
+- hosts: localhost
+  tasks:
+    - include_role:
+        nome: ingress-tls-cert

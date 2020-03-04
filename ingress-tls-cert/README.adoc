@@ -1,0 +1,8 @@
+== ingres-tls-cert
+
+This role will save the TLS cert as a Secret in OpenShift and reconfigures the
+default ingress controller to use this secret for it's defaultCertificate.
+
+=== TODO
+
+- Need to update the readme

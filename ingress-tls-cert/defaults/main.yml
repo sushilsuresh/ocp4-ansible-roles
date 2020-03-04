@@ -1,0 +1,23 @@
+---
+# defaults file for ingress-tls-cert
+
+ocp_cluster_id: "demo"
+
+# This variable should contain the certification for the apps sub domain.
+# the variable should include the full cert chain. including intermediate
+# and root ca cert.
+ingress_certs: ""
+ingress_key: ""
+
+
+##############
+# If you have the cert and key in a file stored in pem format you can use the lookup plugin
+# and load the file into the variable
+# NOTE: When using the lookup plugin the contents of the file are loaded as is.
+#       The secret stored in OCP expects the new line char at the end for tls.crt and tls.key
+#
+# IDEALLY: you want a lookup plugin which will look up the necessary cert and key from a vault
+#          like hashicorp vault
+#
+# ingress_certs: "{{ lookup('file', '{{ inventory_dir }}/config/{{ ocp_cluster_id }}/apps-domain.pem') }}\n"
+# ingress_key: "{{ lookup('file', '{{ inventory_dir }}/config/{{ ocp_cluster_id }}/apps-domain.key') }}\n"
