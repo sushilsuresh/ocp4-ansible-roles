@@ -1,0 +1,56 @@
+---
+# Prepare Image Registry
+
+- name: get config for imageregistry
+  k8s_facts:
+    api_version: imageregistry.operator.openshift.io/v1
+    kind: Config
+    name: cluster
+  register: reg_imagecfg
+
+# Configure PVC storage provided the variable image_registry_emptydir variable
+# is false.
+- name: Configure PVC storage for Image Registry
+  block:
+    - name: Remove emptyDir storage if configured
+      shell: >-
+        oc patch configs.imageregistry.operator.openshift.io/cluster
+        --type json
+        --patch='[{"op":"remove","path":"/spec/storage/emptyDir"}]'
+      when:
+        - reg_imagecfg['resources'][0]['spec']['storage']['emptyDir'] is defined
+
+    - name: Assign pvc to image registry if it is not already assigned
+      shell: >-
+        oc patch configs.imageregistry.operator.openshift.io/cluster
+        --type merge
+        --patch='{"spec":{"storage":{"pvc":{"claim":""}}}}'
+      when:
+        - reg_imagecfg['resources'][0]['spec']['storage']['pvc'] is not defined
+  when:
+    - not image_regitry_emptydir | bool
+
+###############################################################################
+# NOTE: This task will setup emptyDir storage for image-registry
+###############################################################################
+- name: Configure emptyDir storage for Image Registry
+  shell: >-
+    oc patch configs.imageregistry.operator.openshift.io/cluster
+    --type merge
+    --patch='{"spec":{"storage":{"emptyDir":{}}}}'
+  when:
+    - image_regitry_emptydir | bool
+    - reg_imagecfg['resources'][0]['spec']['storage']['emptyDir'] is defined
+###############################################################################
+
+###############################################################################
+# NOTE: This attribute was introduced in OCP 4.3
+###############################################################################
+- name: Change image registry ManagementState
+  shell: >-
+    oc patch configs.imageregistry.operator.openshift.io/cluster
+    --type merge
+    --patch='{"spec":{"managementState":"Managed"}}}'
+  when:
+    - reg_imagecfg['resources'][0]['spec']['managementState'] == "Removed"
+###############################################################################

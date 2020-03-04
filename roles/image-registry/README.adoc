@@ -1,0 +1,53 @@
+== image-registry
+This role configures the image-registry on freshly installed OpenShift cluster.
+
+The following steps are taken by the role
+
+- Change the managementState to Managed for the registryoperator config
+- Configure storage for the ImageRegistry
+
+=== Role Variables
+Default role variables that are defined.
+```
+image_registry_size: 100Gi
+image_regitry_emptydir: false
+```
+
+=== Example Usage
+Example invocation of the role in a playbook
+
+[source,yaml]
+----
+- hosts: localhost
+  tasks:
+    - include_role:
+        name: image-registry
+----
+
+OR if you want to override some default variables
+
+[source,yaml]
+----
+- hosts: localhost
+  tasks:
+    - include_role:
+        name: image-registry
+      vars:
+        image_regitry_emptydir: true
+----
+
+If you would like to use the role without including it or writing a playbook,
+from the root of this github repo you can run the following.
+
+[source,bash]
+----
+ansible-playbook roles/image-registry/apply/main.yml \
+                 -e image_regitry_emptydir=true
+----
+
+TODO:
+
+- Been meaning to use image_registry_size to be able to specify the size of the
+  storage volume that is claimed. The image-registry by default will claim a
+  volume of size 100Gi
+- Mande a bunch of changes and haven't tested it. Adding this as a reminder
