@@ -9,6 +9,23 @@ ton of effort to figure out exactly what all needs to be done.
 A lot of assumptions are made.
 So please walk through the roles first, before attempting to run them.
 
+=== Setting up your environment to run the playbooks
+
+==== RHEL7
+
+Assuming that you are running as root. Adjust accordingly
+
+----
+subscription-manager repos --enable="rhel-7-server-ansible-2.7-rpms"
+yum update ansible
+
+subscription-manager repos --enable rhel-server-rhscl-7-rpms
+
+yum install python27-python-pip
+pip install -U setuptools
+pip install --user openshift kubernetes
+----
+
 === Runing the indivdual roles
 You can run individual roles by runnning ansible playbook against the
 roles/<role-name>/apply/main.yaml playbook in each of the individual roles.
