@@ -68,6 +68,10 @@
       delay: 60
       ignore_errors: true
 
+# NOTE: For a Disconnected cluster replace the queries with the queires listed
+#       at the end of this file.
+
+
 ###############################################################################
 # What do the queries do ?
 #
@@ -90,4 +94,24 @@
 #
 # You can chain your post install configure playbooks to kick in after this
 # playbook complete.
+###############################################################################
+
+
+###############################################################################
+# NOTE: When setting up a disconnected cluster, the openshift-samples operator
+#       will not go active because it will not able to download the necessary
+#       imagestreams that are required to complete the setup of the samples
+#       operator.
+#
+# We need to update the json queries to filter out the samples operator from
+# the list. Below is how you would update the queries to filter out the samples
+# operator.
+#
+# vars:
+#   available_query: "resources[?metadata.name!='openshift-samples'].status.conditions[] | [?type=='Available'].status"
+#   available: "{{ reg_ocp_co | json_query(available_query) | flatten | unique }}"
+#   progressing_query: "resources[?metadata.name!='openshift-samples'].status.conditions[] | [?type=='Progressing'].status"
+#   progressing: "{{ reg_ocp_co | json_query(progressing_query) | flatten | unique }}"
+#   degraded_query: "resources[?metadata.name!='openshift-samples'].status.conditions[] | [?type=='Degraded'].status"
+#   degraded: "{{ reg_ocp_co | json_query(degraded_query) | flatten | unique }}"
 ###############################################################################
