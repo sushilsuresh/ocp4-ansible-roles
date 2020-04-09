@@ -1,0 +1,44 @@
+---
+# tasks file for local-storage---
+
+- name: Create local-storage Namespace
+  command: oc apply -f {{ role_path }}/files/local-storage-namespace.yaml
+  register: reg_ls_namespace
+  changed_when: reg_ls_namespace is not search(' unchanged')
+
+- name: Create OperatorGroup local-storage-group
+  command: oc apply -f {{ role_path }}/files/local-storage-og.yaml
+  register: reg_ls_og
+  changed_when: reg_ls_og is not search(' unchanged')
+
+- name: Create Subscription for local-storage
+  command: oc apply -f {{ role_path }}/files/local-storage-sub.yaml
+  register: reg_ls_sub
+  changed_when: reg_ls_sub is not search(' unchanged')
+
+- name: Wait for local-storage subscription to be installed
+  k8s_facts:
+    api_version: operators.coreos.com/v1alpha1
+    kind: ClusterServiceVersion
+    namespace: local-storage
+  register: reg_csr_status
+  vars:
+    status_query: "resources[*].status.phase"
+    update_status: "{{ reg_csr_status | json_query(status_query) | flatten | unique }}"
+  until:
+    - update_status == ['Succeeded']
+  retries: 10 # wait for 10 minutes (10 retries x 60 sec = 600 sec)
+  delay: 60
+  # TODO: Refind the udpate_status condition we check. As of now it check to
+  #       see if all the operators installed in the namespace have a status of
+  #       Succeeded. Consider just checking the operator that we need installed
+
+- name: Create LocalStorage object for MON volume
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'localvolume-mon.yaml.j2') }}"
+
+- name: Create LocalVolume object for OSD volume
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'localvolume-osd.yaml.j2') }}"
