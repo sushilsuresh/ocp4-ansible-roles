@@ -1,0 +1,12 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: ocs-operator
+  namespace: openshift-storage
+spec:
+  channel: stable-4.3
+  installPlanApproval: Automatic
+  name: ocs-operator
+  source: ocs-catalogsource
+  sourceNamespace: openshift-marketplace
+  startingCSV: ocs-operator.v4.3.0-409.ci
