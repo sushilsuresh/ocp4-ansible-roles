@@ -1,0 +1,31 @@
+Local Storage
+=============
+
+This role deploys and enables the Local Storage Operator in OpenShift. For
+detailed documentation on how to cofigure Local Storage  please refer to
+link:https://github.com/openshift/local-storage-operator/blob/master/docs/deploy-with-olm.md[Local Storage Operator]
+
+Once the Local Storage operator is provisioned, you will can check the status
+of pods and PVs by running
+
+----
+oc get pods -o wide -n local-storage
+oc get pv -n local-stroage
+----
+
+Requirements
+------------
+This role assumes that your worker nodes or VMs have one or more disk presented
+to the vm, which can be used for crated PVs, and PVCs.
+
+IMPORTANT: This role was developed for a specific use case. This is only to be
+used as a reference. to see how Local Storage Operator can be deployed and PVs
+created.
+
+In this eg: we create 2 x StorageClass.
+
+Assumption
+----------
+Assuming the OCP cluster is a connected cluster and the OLM is fully
+operational and the Local Storage Operator is available in the Operator Hub.
+
