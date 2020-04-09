@@ -1,0 +1,5 @@
+
+- name: Create openshift-storage Namespace
+  command: oc apply -f {{ role_path }}/files/ocs-namespace.yaml
+  register: reg_ocs_namespace
+  changed_when: reg_ocs_namespace is not search(' unchanged')

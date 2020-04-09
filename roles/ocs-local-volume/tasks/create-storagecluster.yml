@@ -1,0 +1,20 @@
+
+- name: Create the StorageCluster object
+  command: oc apply -f {{ role_path }}/files/storagecluster.yaml
+  register: reg_storagecluster
+  changed_when: reg_storagecluster is not search(' unchanged')
+
+- name: Wait for StorageCluster to be ready
+  k8s_info:
+    api_version: ocs.openshift.io/v1
+    kind: StorageCluster
+    namespace: openshift-storage
+    name: ocs-storagecluster
+  register: reg_storagecluster
+  vars:
+    status_query: "resources[*].status.phase"
+    update_status: "{{ reg_storagecluster | json_query(status_query) }}"
+  until:
+    - update_status == ['Ready']
+  retries: 10 # wait for 10 minutes (10 retries x 60 sec = 600 sec)
+  delay: 60

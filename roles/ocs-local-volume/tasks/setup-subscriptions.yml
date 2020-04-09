@@ -1,0 +1,32 @@
+
+- name: Create OperatorGroup openshift-storage-operatorgroup
+  command: oc apply -f {{ role_path }}/files/ocs-og.yaml
+  register: reg_ocs_og
+  changed_when: reg_ocs_og is not search(' unchanged')
+
+- name: Create Subscription for lib-bucket-provisioner
+  command: oc apply -f {{ role_path }}/files/lib-bucket-provisioner-sub.yaml
+  register: reg_lib_bucket_sub
+  changed_when: reg_lib_bucket_sub is not search(' unchanged')
+
+- name: Create Subscription for ocs
+  command: oc apply -f {{ role_path }}/files/ocs-sub.yaml
+  register: reg_ocs_sub
+  changed_when: reg_ocs_sub is not search(' unchanged')
+
+- name: Wait for subscriptions to be installed
+  k8s_info:
+    api_version: operators.coreos.com/v1alpha1
+    kind: ClusterServiceVersion
+    namespace: openshift-storage
+  register: reg_csv_status
+  vars:
+    status_query: "resources[*].status.phase"
+    update_status: "{{ reg_csv_status | json_query(status_query) | flatten | unique }}"
+  until:
+    - update_status == ['Succeeded']
+  retries: 10 # wait for 10 minutes (10 retries x 60 sec = 600 sec)
+  delay: 60
+  # TODO: Refine the udpate_status condition we check. As of now it check to
+  #       see if all the operators installed in the namespace have a status of
+  #       Succeeded. Consider just checking the operator that we need installed

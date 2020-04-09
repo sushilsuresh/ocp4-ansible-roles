@@ -1,0 +1,12 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: lib-bucket-provisioner-alpha-community-operators-openshift-marketplace
+  namespace: openshift-storage
+spec:
+  channel: alpha
+  installPlanApproval: Automatic
+  name: lib-bucket-provisioner
+  source: community-operators
+  sourceNamespace: openshift-marketplace
+  startingCSV: lib-bucket-provisioner.v1.0.0

@@ -1,0 +1,30 @@
+Deploying OpenShift Container Storage using Local Devices
+=========
+
+This role will deploy OpenShift Container Storage  for you OpenShift cluster.
+The role was written to closely mirror the steps followed in the git docs that
+can be found at
+link:https://github.com/red-hat-storage/ocs-training/blob/master/ocp4ocs4/local-storage.adoc[Deploying OpenShift Container Storage using Local Devices]
+
+Requirements
+------------
+
+Need 3 x VMs or worker nodes with the following
+- label the worker nodes designated for storage with cluster.ocs.openshift.io/openshift-storage=''
+- 2 x spare disks attached. 1 for OSD and 1 for MON
+- Local Storage Operator is installed and the 2 x drives made vailable as PVs
+
+Role Variables
+--------------
+
+----
+default_storageclass: "ocs-storagecluster-ceph-rbd"
+----
+
+Post installation of OCS, we setup the above strage class as the default
+storage class for the cluster.
+
+Dependencies
+------------
+
+Dempends on the Local Storage Operator installed and configured.

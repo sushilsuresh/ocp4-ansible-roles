@@ -1,0 +1,10 @@
+---
+# tasks file for ocs
+
+- include_tasks: create-namespace.yml
+
+- include_tasks: setup-subscriptions.yml
+
+- include_tasks: create-storagecluster.yml
+
+- include_tasks: setup-default-storageclass.yml
