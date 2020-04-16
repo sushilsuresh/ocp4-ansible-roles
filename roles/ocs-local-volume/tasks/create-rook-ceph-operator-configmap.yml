@@ -1,0 +1,24 @@
+###############################################################################
+# NOTE: By default the rook ceph operator create csi plugin daemonsets with no
+#       tolerations. The end result is the daemonsets do not run on the master
+#       nodes or any node that has a taint with and effect of NoSchedule.
+#       The configmap will make sure all the CSI Plugin daemonsets are started
+#       up with a toleration of NoSchedule.
+#
+# References:
+# - https://github.com/rook/rook/blob/master/cluster/examples/kubernetes/ceph/operator-openshift.yaml#L142-L163
+# - https://access.redhat.com/documentation/en-us/red_hat_openshift_container_storage/4.3/html-single/managing_openshift_container_storage/index#managing-container-storage-interface-component-placements_rhocs
+#
+# This playbook role creates the ConfigMap before the OCS operator is installed
+# If you are creating the ConfigMap after the fact, you will need to restart
+# the operator pod or destroy the operator pod so it can pickup this new
+# configuraiton.
+#
+# oc get pods -n openshift-storage -l app=rook-ceph-operator
+# oc delete pod -n openshift-storage -l app=rook-ceph-operator
+#
+###############################################################################
+- name: Create ConfigMap for rook ceph operator config
+  command: oc apply -f {{ role_path }}/files/rook-ceph-operator-config.yaml
+  register: reg_rook_ceph_operator_cm
+  changed_when: reg_rook_ceph_operator_cm is not search(' unchanged')

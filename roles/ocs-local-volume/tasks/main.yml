@@ -3,6 +3,8 @@
 
 - include_tasks: create-namespace.yml
 
+- include_tasks: create-rook-ceph-operator-configmap.yml
+
 - include_tasks: setup-subscriptions.yml
 
 - include_tasks: create-storagecluster.yml
