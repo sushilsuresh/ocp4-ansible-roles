@@ -9,4 +9,4 @@ spec:
   name: ocs-operator
   source: ocs-catalogsource
   sourceNamespace: openshift-marketplace
-  startingCSV: ocs-operator.v4.3.0-409.ci
+  startingCSV: ocs-operator.v4.3.0
