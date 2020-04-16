@@ -4,6 +4,10 @@ This role creates a cron job which peforms the following
 - creates a snapshot of the etcd database
 - saves the snapshot to an pvc volume
 
+IMPORTANT: This version of the script is tested with OCP 4.3.10 . If you run
+           into issues, try the older version of this role in the ocp-4.2
+           branch
+
 The cron job creates a new pod with the exact same image as the etcd pods
 The reson why we are using the same image as the etcd pods is to make sure
 that the image has the etcdctl command backed into the image.
@@ -25,14 +29,15 @@ that we have access to the backup script etcd-snapshot-backup.sh within the
 cron job pod.
 
 The default backup script `/usr/local/bin/etcd-snapshot-backup.sh` calls a
-function
-link:https://github.com/openshift/machine-config-operator/blob/master/templates/master/00-master/_base/files/usr-local-bin-openshift-recovery-tools-sh.yaml#L22-L43[dl_etcdctl]
-that goes out to the internet and downloads the etcdctl binaries inorder to
-perform an backup operaion. In a connected environment this works great. In a
-disconnected envrionment this results in the backups failing.
+function *dl_etcdctl* which run podsman with the etcd image and copies the
+etcdctl binary. We do not have to do that as this cron job is runing the etcd
+image and the etcdctl binary is already baked into the image.
 
-The below have been added to make this cron job work in a disconnected
-environment. A ConfigMap is created to attach/mount 2 bash scrips
+The below have been added to make this cron job work without having to try and
+source a etcdctl binary to perform the backups. For legacy reasons the script
+is named as etcd-snapshot-backup-disconnected.sh (could be named better now)
+
+A ConfigMap is created to attach/mount 2 bash scrips
 
 - etcd-backup.sh
 - etcd-snapshot-backup-disconnected.sh
@@ -40,15 +45,8 @@ environment. A ConfigMap is created to attach/mount 2 bash scrips
 The cron job will invoke the first bash scritpt -
 `/usr/local/bin/etcd-backup.sh`
 
-The *etcd-backup.sh* script will first attempt to perform a backup as per
-the official documentation by invoking the script
-`/usr/local/bin/etcd-snapshot-backup.sh`
-
-In a disconnectd the above script will fail. If the default backup script
-returns a non-zero exit code, we call the disconnected backup script.
-*/usr/local/bin/etcd-snapshot-backup-disconnected.sh*
-
-The disconnected backup script is identical to the orignal script
+The disconnected backup script is identical to the original script that is
+shipped with OCP except for the follwing changes
 The only changes are
 
 - the ETCDCTL var now points to a local copy of etcdctl
@@ -56,14 +54,13 @@ The only changes are
 
 See diff below
 ```
-[root@helper bin]# diff etcd-snapshot-backup-disconnected.sh etcd-snapshot-backup.sh
-30c30,31
-< ETCDCTL="/usr/bin/etcdctl"
+[root@helper bin]# diff etcd-snapshot-backup.sh etcd-snapshot-backup-disconnected.sh
+40c40
+< ETCDCTL="${ASSET_DIR}/bin/etcdctl"
 ---
-> ETCD_VERSION=v3.3.10
-> ETCDCTL="${ASSET_DIR}/bin/etcdctl"
-39a41
->   dl_etcdctl
+> ETCDCTL="/usr/bin/etcdctl"
+50d49
+<   dl_etcdctl
 ```
 
 === Requirements
@@ -135,4 +132,3 @@ that this is excessive. However keeping it short was handy for troubleshooting.
 TODO:
 
   - Make the cron schedule a vairable so that it can be customised.
-  
