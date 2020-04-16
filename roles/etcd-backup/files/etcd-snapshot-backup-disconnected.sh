@@ -2,6 +2,7 @@
 
 set -o errexit
 set -o pipefail
+set -o errtrace
 
 # example
 # etcd-snapshot-backup.sh $path-to-snapshot
@@ -12,17 +13,26 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 usage () {
-    echo 'Path to backup file required: ./etcd-snapshot-backup.sh ./backup.db'
+    echo 'Path to backup dir required: ./etcd-snapshot-backup.sh <path-to-backup-dir>'
     exit 1
 }
 
 ASSET_DIR=./assets
 
-if [ "$1" != "" ]; then
-  SNAPSHOT_FILE="$1"
-else
+if [ -z "$1" ] || [ -f "$1" ]; then
   usage
 fi
+
+if [ ! -d "$1" ]; then
+  mkdir -p $1
+fi
+
+BACKUP_DIR="$1"
+DATESTRING=$(date "+%F_%H%M%S")
+BACKUP_TAR_FILE=${BACKUP_DIR}/static_kuberesources_${DATESTRING}.tar.gz
+SNAPSHOT_FILE="${BACKUP_DIR}/snapshot_${DATESTRING}.db"
+
+trap "rm -f ${BACKUP_TAR_FILE} ${SNAPSHOT_FILE}" ERR
 
 CONFIG_FILE_DIR=/etc/kubernetes
 MANIFEST_DIR="${CONFIG_FILE_DIR}/manifests"
@@ -39,7 +49,9 @@ function run {
   init
   backup_etcd_client_certs
   backup_manifest
+  backup_latest_kube_static_resources
   snapshot_data_dir
+  echo "snapshot db and kube resources are successfully saved to ${BACKUP_DIR}!"
 }
 
 run
