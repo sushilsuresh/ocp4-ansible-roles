@@ -61,15 +61,32 @@
         degraded_query: "resources[*].status.conditions[?type=='Degraded'].status"
         degraded: "{{ reg_ocp_co | json_query(degraded_query) | flatten | unique }}"
       until:
+        - reg_ocp_co.resources is defined
+        - reg_ocp_co.resources | length > 2
         - available == ['True']
         - progressing == ['False']
         - degraded == ['False']
       retries: 60 # wait for 1 hour max
       delay: 60
       ignore_errors: true
+# Why the condition - " reg_ocp_co.resources | length > 2 "
+# When a cluster starts coming up during a bootstrap process and the api starts
+# responding, it starts up the cloud-credential controller first. Mind you at
+# this point the bootstrap server is resonding to the api calls.
+# Following that the network operator starts. Can't remember now which is the
+# 3rd operator that starts. I think it is the machine-config operator.
+# Either way, there is an edge case that results in intial 2 cluster operators
+# to have status that would meet our success criteria that we are looking for.
+# The success criteria being.
+# available=True, progressing=False, degraded=False
+# So the condition waits for at least 3 or more of the cluster operators to
+# start up before we check for our success criteria.
 
 # NOTE: For a Disconnected cluster replace the queries with the queires listed
 #       at the end of this file.
+
+# NOTE: For a cluster where all your worker nodes are not in the load baalcner
+#       pool for *.apps subdomain, please refere to the 2nd notessection.
 
 
 ###############################################################################
@@ -114,4 +131,28 @@
 #   progressing: "{{ reg_ocp_co | json_query(progressing_query) | flatten | unique }}"
 #   degraded_query: "resources[?metadata.name!='openshift-samples'].status.conditions[] | [?type=='Degraded'].status"
 #   degraded: "{{ reg_ocp_co | json_query(degraded_query) | flatten | unique }}"
+###############################################################################
+
+
+###############################################################################
+# NOTE: Assume you are setting up large cluster with several worker nodes.
+#       However you only have 2 x of your worker nodes that you plan on
+#       classifying as infra nodes added to the load balancer pool for incoming
+#       requests for port 80 and 443. (Basically for the *.apps subdomain)
+#       When the cluster boostrap is being completed, you could end up with 2
+#       router pods for the default ingress congroller runing on 2 worker nodes
+#       that are not part of the load balancer pool. In a cloud based
+#       deployment you would have all the workder nodes added to the load
+#       balancer pool. That is not the case when you setup in baremetal or in
+#       a vsphere cluster. In such a scenario you will notice that that console
+#       and authentication operators would never complete their installation.
+#       The below json query would just ignore the status of the "console" and
+#       "authentication" operators.
+# vars:
+#   available_query: "resources[?(metadata.name!='authentication'&&metadata.name!='console')].status.conditions[] | [?type=='Available'].status"
+#   available: "{{ reg_ocp_co | json_query(available_query) | default([])| flatten | unique }}"
+#   progressing_query: "resources[?(metadata.name!='authentication'&&metadata.name!='console')].status.conditions[] | [?type=='Progressing'].status"
+#   progressing: "{{ reg_ocp_co | json_query(progressing_query) | default([]) | flatten | unique }}"
+#   degraded_query: "resources[?(metadata.name!='authentication'&&metadata.name!='console')].status.conditions[] | [?type=='Degraded'].status"
+#   degraded: "{{ reg_ocp_co | json_query(degraded_query) | default([]) | flatten | unique }}"
 ###############################################################################
