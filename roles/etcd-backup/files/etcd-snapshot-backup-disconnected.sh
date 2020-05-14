@@ -1,24 +1,25 @@
 #!/usr/bin/env bash
 
+### Created by cluster-etcd-operator. DO NOT edit.
+
 set -o errexit
 set -o pipefail
 set -o errtrace
 
 # example
-# etcd-snapshot-backup.sh $path-to-snapshot
+# cluster-backup.sh $path-to-snapshot
 
 if [[ $EUID -ne 0 ]]; then
   echo "This script must be run as root"
   exit 1
 fi
 
-usage () {
-    echo 'Path to backup dir required: ./etcd-snapshot-backup.sh <path-to-backup-dir>'
-    exit 1
+function usage {
+  echo 'Path to backup dir required: ./cluster-backup.sh <path-to-backup-dir>'
+  exit 1
 }
 
-ASSET_DIR=./assets
-
+# If the first argument is missing, or it is an existing file, then print usage and exit
 if [ -z "$1" ] || [ -f "$1" ]; then
   usage
 fi
@@ -27,31 +28,44 @@ if [ ! -d "$1" ]; then
   mkdir -p $1
 fi
 
+# backup latest static pod resources
+function backup_latest_kube_static_resources {
+  RESOURCES=("$@")
+
+  LATEST_RESOURCE_DIRS=()
+  for RESOURCE in "${RESOURCES[@]}"; do
+    LATEST_RESOURCE=$(ls -trd "${CONFIG_FILE_DIR}"/static-pod-resources/${RESOURCE}-[0-9]* | tail -1) || true
+    if [ -z "$LATEST_RESOURCE" ]; then
+      echo "error finding static-pod-resource ${RESOURCE}"
+      exit 1
+    fi
+
+    echo "found latest ${RESOURCE}: ${LATEST_RESOURCE}"
+    LATEST_RESOURCE_DIRS+=("${LATEST_RESOURCE#${CONFIG_FILE_DIR}/}")
+  done
+
+  # tar latest resources with the path relative to CONFIG_FILE_DIR
+  tar -cpzf $BACKUP_TAR_FILE -C ${CONFIG_FILE_DIR} "${LATEST_RESOURCE_DIRS[@]}"
+}
+
 BACKUP_DIR="$1"
 DATESTRING=$(date "+%F_%H%M%S")
 BACKUP_TAR_FILE=${BACKUP_DIR}/static_kuberesources_${DATESTRING}.tar.gz
 SNAPSHOT_FILE="${BACKUP_DIR}/snapshot_${DATESTRING}.db"
+BACKUP_RESOURCE_LIST=("kube-apiserver-pod" "kube-controller-manager-pod" "kube-scheduler-pod" "etcd-pod")
 
 trap "rm -f ${BACKUP_TAR_FILE} ${SNAPSHOT_FILE}" ERR
 
-CONFIG_FILE_DIR=/etc/kubernetes
-MANIFEST_DIR="${CONFIG_FILE_DIR}/manifests"
-MANIFEST_STOPPED_DIR="${ASSET_DIR}/manifests-stopped"
-ETCDCTL="/usr/bin/etcdctl"
-ETCD_DATA_DIR=/var/lib/etcd
-ETCD_MANIFEST="${MANIFEST_DIR}/etcd-member.yaml"
-ETCD_STATIC_RESOURCES="${CONFIG_FILE_DIR}/static-pod-resources/etcd-member"
-STOPPED_STATIC_PODS="${ASSET_DIR}/tmp/stopped-static-pods"
+source /etc/kubernetes/static-pod-resources/etcd-certs/configmaps/etcd-scripts/etcd.env
+source /etc/kubernetes/static-pod-resources/etcd-certs/configmaps/etcd-scripts/etcd-common-tools
 
-source "/usr/local/bin/openshift-recovery-tools"
+# TODO handle properly
+if [ ! -f "$ETCDCTL_CACERT" ] && [ ! -d "${CONFIG_FILE_DIR}/static-pod-certs" ]; then
+  ln -s ${CONFIG_FILE_DIR}/static-pod-resources/etcd-certs ${CONFIG_FILE_DIR}/static-pod-certs
+fi
 
-function run {
-  init
-  backup_etcd_client_certs
-  backup_manifest
-  backup_latest_kube_static_resources
-  snapshot_data_dir
-  echo "snapshot db and kube resources are successfully saved to ${BACKUP_DIR}!"
-}
-
-run
+# Commenting this out as we are running this script via a cron job.
+# dl_etcdctl
+backup_latest_kube_static_resources "${BACKUP_RESOURCE_LIST[@]}"
+etcdctl snapshot save ${SNAPSHOT_FILE}
+echo "snapshot db and kube resources are successfully saved to ${BACKUP_DIR}"

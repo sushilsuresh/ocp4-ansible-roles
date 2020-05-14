@@ -1,12 +1,22 @@
 == etcd-backup
 This role creates a cron job which peforms the following
 
+NOTE: Starting with OCP 4.4 there is a etcd operator. I believe the end goal is
+      to get the backups performed via the etcd operators. A lot has changed.
+      Once the etcd operator takes over the backups we can depricate this role.
+
+link:https://github.com/openshift/cluster-etcd-operator[OpenShift Cluster etcd Operator]
+
+I have made changes to the master branch which will break this role for older
+version for OCP. Please refer to the older versions that are availabe in
+other branches.
+
 - creates a snapshot of the etcd database
 - saves the snapshot to an pvc volume
 
-IMPORTANT: This version of the script is tested with OCP 4.3.10 . If you run
-           into issues, try the older version of this role in the ocp-4.2
-           branch
+IMPORTANT: This version of the script is tested with OCP 4.4.3 . If you run
+           into issues, try the older version of this role in the ocp-4.2 or
+           the ocp-4.3.10 branch.
 
 The cron job creates a new pod with the exact same image as the etcd pods
 The reson why we are using the same image as the etcd pods is to make sure
@@ -49,18 +59,19 @@ The disconnected backup script is identical to the original script that is
 shipped with OCP except for the follwing changes
 The only changes are
 
-- the ETCDCTL var now points to a local copy of etcdctl
 - the function to download etcdctl was removed
+
+The **NEW** script that is shipped with OCP 4.4 is called
+link:https://github.com/openshift/cluster-etcd-operator/blob/master/bindata/etcd/cluster-backup.sh[cluster-backup.sh]
 
 See diff below
 ```
-[root@helper bin]# diff etcd-snapshot-backup.sh etcd-snapshot-backup-disconnected.sh
-40c40
-< ETCDCTL="${ASSET_DIR}/bin/etcdctl"
+[root@helper bin]# diff cluster-backup.sh etcd-snapshot-backup-disconnected.sh
+67c67,68
+< dl_etcdctl
 ---
-> ETCDCTL="/usr/bin/etcdctl"
-50d49
-<   dl_etcdctl
+> # Commenting this out as we are running this script via a cron job.
+> # dl_etcdctl
 ```
 
 === Requirements
