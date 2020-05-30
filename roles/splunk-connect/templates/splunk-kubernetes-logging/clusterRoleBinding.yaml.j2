@@ -1,0 +1,19 @@
+---
+# Source: splunk-connect-for-kubernetes/charts/splunk-kubernetes-logging/templates/clusterRoleBinding.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: splunk-connect-splunk-kubernetes-logging
+  labels:
+    app: splunk-kubernetes-logging
+    chart: splunk-kubernetes-logging-{{ splunk_connect_version }}
+    release: splunk-connect
+    heritage: Helm
+roleRef:
+  kind: ClusterRole
+  name: splunk-connect-splunk-kubernetes-logging
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: splunk-connect-splunk-kubernetes-logging
+  namespace: {{ splunk_connect_namespace }}

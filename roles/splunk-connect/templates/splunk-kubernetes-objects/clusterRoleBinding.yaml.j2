@@ -1,16 +1,19 @@
 ---
+# Source: splunk-connect-for-kubernetes/charts/splunk-kubernetes-objects/templates/clusterRoleBinding.yaml
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: splunk-kubernetes-objects
+  name: splunk-connect-splunk-kubernetes-objects
   labels:
     app: splunk-kubernetes-objects
-    version: {{ splunk_connect_version }}
+    chart: splunk-kubernetes-objects-{{ splunk_connect_version }}
+    release: splunk-connect
+    heritage: Helm
 roleRef:
   kind: ClusterRole
-  name: splunk-kubernetes-objects
+  name: splunk-connect-splunk-kubernetes-objects
   apiGroup: rbac.authorization.k8s.io
 subjects:
 - kind: ServiceAccount
-  name: splunk-kubernetes-objects
+  name: splunk-connect-splunk-kubernetes-objects
   namespace: {{ splunk_connect_namespace }}

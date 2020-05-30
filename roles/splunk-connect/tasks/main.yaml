@@ -6,19 +6,6 @@
     state: present
     definition: "{{ lookup('template', 'namespace.yaml.j2') }}"
 
-- name: Create configmap for holding Root CA cert
-  k8s:
-    state: present
-    definition:
-      apiVersion: v1
-      kind: ConfigMap
-      metadata:
-        name: "splunk-ca-crt"
-        namespace: "{{ splunk_connect_namespace }}"
-      data:
-        splunk-ca-crt: "{{ lookup('file', 'splunk.example.com.crt') }}"
-
-
 # setup splunk forwarding of k8s object changes
 - include_tasks: splunk-kubernetes-objects.yaml
 

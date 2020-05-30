@@ -30,7 +30,7 @@
     definition: "{{ lookup('template', 'splunk-kubernetes-objects/secret.yaml.j2') }}"
 
 - name: Add scc to user
-  shell: "oc adm policy add-scc-to-user privileged system:serviceaccount:{{ splunk_connect_namespace }}:splunk-kubernetes-objects"
+  shell: "oc adm policy add-scc-to-user privileged system:serviceaccount:{{ splunk_connect_namespace }}:splunk-connect-splunk-kubernetes-objects"
   when:
     - reg_splunk_kubernetes_objects_sa.changed
 

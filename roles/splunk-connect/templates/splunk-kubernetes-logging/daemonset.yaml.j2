@@ -1,102 +1,91 @@
 ---
-# Source: https://github.com/splunk/splunk-connect-for-kubernetes/blob/develop/manifests/splunk-kubernetes-logging/daemonset.yaml
+# Source: splunk-connect-for-kubernetes/charts/splunk-kubernetes-logging/templates/daemonset.yaml
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: splunk-kubernetes-logging
+  name: splunk-connect-splunk-kubernetes-logging
   labels:
     app: splunk-kubernetes-logging
+    chart: splunk-kubernetes-logging-{{ splunk_connect_version }}
+    release: splunk-connect
+    heritage: Helm
     engine: fluentd
-    version: {{ splunk_connect_version }}
 spec:
   updateStrategy:
     type: RollingUpdate
   selector:
     matchLabels:
       app: splunk-kubernetes-logging
+      release: splunk-connect
   template:
     metadata:
       labels:
         app: splunk-kubernetes-logging
-        version: {{ splunk_connect_version }}
-      annotations:
-        prometheus.io/scrape: 'true'
-        prometheus.io/port: '24231'
+        release: splunk-connect
     spec:
-      serviceAccountName: splunk-kubernetes-logging
+      serviceAccountName: splunk-connect-splunk-kubernetes-logging
       nodeSelector:
         beta.kubernetes.io/os: linux
       tolerations:
-      - effect: NoSchedule
-        key: node-role.kubernetes.io/master
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/master
       containers:
       - name: splunk-fluentd-k8s-logs
-        image: docker.io/splunk/fluentd-hec:{{ splunk_connect_fluentd_version }}
+        image: {{ splunk_connect_fluentd_image }}
         imagePullPolicy: Always
         securityContext:
           privileged: true
           runAsUser: 0
-        args:
-        - update-ca-certificates; /bin/entrypoint.sh -c /fluentd/etc/fluent.conf
-        command:
-        - /bin/sh
-        - '-c'
         env:
-        - name: NODE_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: spec.nodeName
-        - name: MY_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        - name: MY_POD_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
-        - name: SPLUNK_HEC_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: splunk-kubernetes-logging
-              key: splunk_hec_token
+          - name: K8S_NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          - name: MY_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: MY_POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: SPLUNK_HEC_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: splunk-kubernetes-logging
+                key: splunk_hec_token
         resources:
           requests:
             cpu: 100m
             memory: 200Mi
         volumeMounts:
         - name: varlog
-          mountPath: "/var/log"
+          mountPath: /var/log
         - name: varlogdest
-          mountPath: "/var/lib/docker/containers"
+          mountPath: /var/lib/docker/containers
           readOnly: true
         - name: journallogpath
           mountPath: "/run/log/journal"
           readOnly: true
         - name: conf-configmap
-          mountPath: "/fluentd/etc"
+          mountPath: /fluentd/etc
         - name: secrets
-          mountPath: "/fluentd/etc/splunk"
+          mountPath: /fluentd/etc/splunk
           readOnly: true
-        - name: splunkcacert
-          mountPath: /usr/local/share/ca-certificates
       terminationGracePeriodSeconds: 30
       volumes:
       - name: varlog
         hostPath:
-          path: "/var/log"
+          path: /var/log
       - name: varlogdest
         hostPath:
-          path: "/var/lib/docker/containers"
+          path: /var/lib/docker/containers
       - name: journallogpath
         hostPath:
           path: "/run/log/journal"
       - name: conf-configmap
         configMap:
-          name: splunk-kubernetes-logging
+          name: splunk-connect-splunk-kubernetes-logging
       - name: secrets
         secret:
           secretName: splunk-kubernetes-logging
-      - name: splunkcacert
-        configMap:
-          defaultMode: 420
-          name: splunk-ca-crt

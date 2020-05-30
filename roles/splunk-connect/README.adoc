@@ -1,18 +1,15 @@
 == splunk-connect
 This role configures an OpenShift cluster to forward logs to a splunk endpoint
-using the splunk-connect.
+using splunk-connect.
 
 This role was setup based on splunk connect for kubernetes.
 https://github.com/splunk/splunk-connect-for-kubernetes
 
 Please *DO NOT* use the role as is.
 
-IMPORTANT: splunk-connect project is fast moving. When creating this role the
-splunk connect helm charts were not capable for creating service accounts or
-setup scc roles for the service account. Looks like these features have been
-added recently to the develop branch.
-eg: https://github.com/splunk/splunk-connect-for-kubernetes/pull/304/files
-
+IMPORTANT: splunk-connect project is fast moving.
+This role was last updated with splunk-connect version *1.4.1*
+Always fetch the latest version from the upstream splunk-connect git repo.
 
 === How were the templates in the templates folder generated ?
 I chose to use helm 3 , which mean i did not have to worry about setting up
@@ -22,51 +19,35 @@ tiller. (helm 3 was released just 3 days before this role was created)
 - run helm template to genereate the templates
 
 ```
-mkdir templates
+mkdir splunk-connect
 helm template splunk-connect \
-     -f my_values.yaml \
-     https://github.com/splunk/splunk-connect-for-kubernetes/releases/download/1.3.0/splunk-connect-for-kubernetes-1.3.0.tgz  \
-     --output-dir ./tempaltes
+     -f splunk-connect-config.yaml \
+     https://github.com/splunk/splunk-connect-for-kubernetes/releases/download/1.4.1/splunk-connect-for-kubernetes-1.4.1.tgz \
+     --output-dir ./splunk-connect
+
 ```
 
-=== Contents of my_values.yaml vars file
+=== Contents of splunk-connect-config.yaml vars file
+You will find a copy checked into the git repo as well.
 ```
 global:
-  logLevel: debug
+  logLevel: info
   splunk:
     hec:
-      insecureSSL: true
       host: splunk.example.com
       port: 8088
-      token: hec-token-to-be-templated
-      indexName: k8s_logs
+      protocol: https
+      insecureSSL: true
   kubernetes:
-    clusterName: "opentlclab-to-be-templated"
+    clusterName: "opentlc"
     openshift: true
 
-## Enabling logging will install the `splunk-kubernetes-logging` chart to a kubernetes
-## cluster to collect logs generated in the cluster to a Splunk indexer/indexer cluster.
-logging:
-  enabled: true
-
-## Enabling objects will install the `splunk-kubernetes-objects` chart to a kubernetes
-## cluster to collect kubernetes objects in the cluster to a Splunk indexer/indexer cluster.
-objects:
-  enabled: true
-
-## Enabling metrics will install the `splunk-kubernetes-metrics` chart to a kubernetes
-## cluster to collect metrics of the cluster to a Splunk indexer/indexer cluster.
-metrics:
-  enabled: false
-
 splunk-kubernetes-logging:
+  enabled: true
   splunk:
     hec:
-      insecureSSL: true
-      host: splunk.example.com
-      port: 8088
-      token: hec-token-to-be-templated
-      indexName: k8s_logs
+      indexName: container-logs
+      token: 5d4a219a-46dd-4da8-b6e4-3b810d685c72
   containers:
     logFormatType: cri
     logFormat: "%Y-%m-%dT%H:%M:%S.%N%:z"
@@ -74,15 +55,16 @@ splunk-kubernetes-logging:
     create: true
 
 splunk-kubernetes-objects:
+  enabled: true
   splunk:
     hec:
-      insecureSSL: true
-      host: splunk.example.com
-      port: 8088
-      token: hec-token-to-be-templated
-      indexName: k8s_objects
+      indexName: k8s-objects
+      token: eb0771d7-7f78-4ef3-9825-acd94120b51b
   serviceAccount:
     create: true
+
+splunk-kubernetes-metrics:
+  enabled: false
 ```
 
 === Dependencies
@@ -92,7 +74,3 @@ Helm3 command line utility installed to generate your templates.
 you are comforatable replacing config settings form the template to be
 variables that can be substituted.
 
-TODO:
-
-  - needs to do more testing and clean up the role
-  - also big changes coming up in the next version that will be released.

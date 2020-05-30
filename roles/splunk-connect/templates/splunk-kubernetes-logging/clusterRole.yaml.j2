@@ -1,0 +1,21 @@
+---
+# Source: splunk-connect-for-kubernetes/charts/splunk-kubernetes-logging/templates/clusterRole.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: splunk-connect-splunk-kubernetes-logging
+  labels:
+    app: splunk-kubernetes-logging
+    chart: splunk-kubernetes-logging-{{ splunk_connect_version }}
+    release: splunk-connect
+    heritage: Helm
+rules:
+- apiGroups:
+    - ""
+  resources:
+    - "namespaces"
+    - "pods"
+  verbs:
+    - "list"
+    - "get"
+    - "watch"

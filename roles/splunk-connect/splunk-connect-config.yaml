@@ -1,0 +1,36 @@
+global:
+  logLevel: info
+  splunk:
+    hec:
+      host: splunk.example.com
+      port: 8088
+      protocol: https
+      insecureSSL: true
+  kubernetes:
+    clusterName: "opentlc"
+    openshift: true
+
+splunk-kubernetes-logging:
+  enabled: true
+  splunk:
+    hec:
+      indexName: container-logs
+      token: 5d4a219a-46dd-4da8-b6e4-3b810d685c72
+  containers:
+    logFormatType: cri
+    logFormat: "%Y-%m-%dT%H:%M:%S.%N%:z"
+  serviceAccount:
+    create: true
+
+splunk-kubernetes-objects:
+  enabled: true
+  splunk:
+    hec:
+      indexName: k8s-objects
+      token: eb0771d7-7f78-4ef3-9825-acd94120b51b
+  serviceAccount:
+    create: true
+
+splunk-kubernetes-metrics:
+  enabled: false
+

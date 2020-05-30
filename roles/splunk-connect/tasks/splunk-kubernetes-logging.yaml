@@ -7,6 +7,16 @@
     definition: "{{ lookup('template', 'splunk-kubernetes-logging/serviceAccount.yaml.j2') }}"
   register: reg_splunk_kubernetes_logging_sa
 
+- name: Create ClusterRole
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'splunk-kubernetes-logging/clusterRole.yaml.j2') }}"
+
+- name: Create ClusterRoleBinding
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'splunk-kubernetes-logging/clusterRoleBinding.yaml.j2') }}"
+
 - name: Create ConfigMap
   k8s:
     state: present
@@ -20,7 +30,7 @@
     definition: "{{ lookup('template', 'splunk-kubernetes-logging/secret.yaml.j2') }}"
 
 - name: Add scc to user
-  shell: "oc adm policy add-scc-to-user privileged system:serviceaccount:{{ splunk_connect_namespace }}:splunk-kubernetes-logging"
+  shell: "oc adm policy add-scc-to-user privileged system:serviceaccount:{{ splunk_connect_namespace }}:splunk-connect-splunk-kubernetes-logging"
   when:
     - reg_splunk_kubernetes_logging_sa.changed
 

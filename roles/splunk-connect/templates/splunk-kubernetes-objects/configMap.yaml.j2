@@ -1,11 +1,14 @@
 ---
+# Source: splunk-connect-for-kubernetes/charts/splunk-kubernetes-objects/templates/configMap.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: splunk-kubernetes-objects
+  name: splunk-connect-splunk-kubernetes-objects
   labels:
     app: splunk-kubernetes-objects
-    version: {{ splunk_connect_version }}
+    chart: splunk-kubernetes-objects-{{ splunk_connect_version }}
+    release: splunk-connect
+    heritage: Helm
 data:
   fluent.conf: |
     <system>
@@ -46,13 +49,13 @@ data:
     <match kube.**>
       @type splunk_hec
       protocol https
-      hec_host {{ splunk_hec_host }}
+      hec_host "{{ splunk_hec_host }}"
       hec_port 8088
       hec_token "#{ENV['SPLUNK_HEC_TOKEN']}"
       host "#{ENV['NODE_NAME']}"
       source_key source
       sourcetype_key sourcetype
-      index {{ splunk_system_index }}
+      index {{ splunk_k8s_objects_index }}
       insecure_ssl true
       <fields>
         cluster_name
