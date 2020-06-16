@@ -16,9 +16,9 @@ port_check() {
     endpoint="api.${DOMAIN}"
   elif [ "${1}" == "APPS" ]
   then
-    endpoint="foo.apps.${DOMAIN}"
+    endpoint="foo.${APP_DOMAIN}"
   else
-    echo "Somethin went horribly wrong !!!"
+    echo "Something went horribly wrong !!!"
     exit 1
   fi
   nc -zv ${endpoint} ${port} 2>1 > /dev/null
@@ -43,7 +43,7 @@ then
 fi
 
 DOMAIN=${1}
-
+APP_DOMAIN="apps.${DOMAIN}"
 
 echo
 echo "External API endpoint port check"
@@ -61,10 +61,9 @@ do
   port_check "INTERNAL" ${port}
 done
 
-
 echo
-echo "External apps endpoint port check"
-echo "#################################"
+echo "External app endpoint port check"
+echo "################################"
 for port in 80 443
 do
   port_check "APPS" ${port}
