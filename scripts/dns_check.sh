@@ -9,7 +9,7 @@ forward_lookup() {
   dns=$(dig ${1}.${DOMAIN} +short)
   if [ "${dns}" != "" ]
   then
-    echo "${i}.${DOMAIN} => ${dns}"
+    echo "${1}.${DOMAIN} => ${dns}"
   else
     EXIT_CODE=1
   fi
@@ -41,11 +41,18 @@ fi
 
 DOMAIN=${1}
 
+BOOTSTRAP_NODE="boostrap"
+MASTER_NODES=$(echo master{00..02})
+WORKER_NODES=$(echo worker{00..02})
+INFRA_NODES=$(echo infra{00..02})
+NODES="${MASTER_NODES} ${WORKER_NODES} ${INFRA_NODES}"
+
+echo $NODES
 
 echo
 echo "Checking master/infra/worker dns records (forward)"
 echo "##################################################"
-for i in {master,infra,worker}{00..02}
+for i in ${NODES}
 do
   forward_lookup ${i}
 done
@@ -53,7 +60,7 @@ done
 echo
 echo "Checking master/infra/worker dns records (reverse)"
 echo "###################################################"
-for i in {master,infra,worker}{00..02}
+for i in ${NODES}
 do
   reverse_lookup ${i}
 done
@@ -72,31 +79,31 @@ echo "############################"
 dns=$(dig _etcd-server-ssl._tcp.${DOMAIN} SRV +short)
 if [ "${dns}" != "" ]
 then
-  echo "etcd SRV record => ${dns}"
+  echo -e "etcd SRV record => \n${dns}"
 fi
 
 echo
 echo "Checking bootstrap dns record"
 echo "###############################"
-for i in bootstrap0
+for i in ${BOOTSTRAP_NODE}
 do
-  forward_lookup $i
+  forward_lookup ${i}
 done
 
 
 echo
-echo "Checking api endpint dns record"
-echo "###############################"
+echo "Checking api endpoint dns record"
+echo "################################"
 for i in api api-int
 do
   forward_lookup ${i}
 done
 
 echo
-echo "Checking wildcard app endpint dns record"
-echo "########################################"
+echo "Checking wildcard app endpoint dns record"
+echo "#########################################"
 for i in foo bar
 do
-  forward_lookup ${i}.apps
+  forward_lookup ${i}
 done
 echo
