@@ -17,7 +17,6 @@
 # https://access.redhat.com/articles/4495171
 
 set -euf -o pipefail
-#set -ef -o pipefail
 
 VERSION=""
 CHANNEL=""
@@ -29,9 +28,6 @@ usage()
     echo -e "\t        check-upgrade-path.sh [--version <version> --channel <channel>] | [-h]"
     echo -e "\n\t eg: ./check-upgrade-path.sh --version 4.3.0 --channel stable-4.3\n"
 }
-
-CURRENT_VERSION=4.3.0;
-CHANNEL_NAME=stable-4.3;
 
 if [ "$#" == 0 ]
 then

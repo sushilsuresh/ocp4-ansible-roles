@@ -13,6 +13,8 @@ connectivty or access to hit https://api.openshift.com/
 
 Reference:
 - link:https://access.redhat.com/solutions/4583231[OpenShift Container Platform (OCP) 4 upgrade paths]
+- link:https://access.redhat.com/solutions/4606811[How to Upgrade OpenShift 4 between different minor versions via "oc" cli]
+- link:https://www.ocp-upgrade.net/[OpenShift Upgrade Path - Graphs]
 
 **Example - 1 :**
 
