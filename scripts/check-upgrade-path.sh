@@ -20,13 +20,13 @@ set -euf -o pipefail
 
 VERSION=""
 CHANNEL=""
+SCRIPT_NAME=$(basename ${0})
 
 usage()
 {
     echo
-    echo -e "\t usage: check-upgrade-path.sh [-v <version> -c <channel>] | [-h]"
-    echo -e "\t        check-upgrade-path.sh [--version <version> --channel <channel>] | [-h]"
-    echo -e "\n\t eg: ./check-upgrade-path.sh --version 4.3.0 --channel stable-4.3\n"
+    echo -e "\t usage: ${SCRIPT_NAME} [--ocp-version <version> --channel <channel>] | [-h]\n"
+    echo -e "\t eg: ./${SCRIPT_NAME} --ocp-version 4.3.0 --channel stable-4.3\n"
 }
 
 if [ "$#" == 0 ]
@@ -37,17 +37,17 @@ fi
 
 while (($#)) ; do
   case $1 in
-    -v | --version )  shift
-                      VERSION=${1}
-                      ;;
-    -c | --channel )  shift
-                      CHANNEL=${1}
-                      ;;
-    -h | --help )     usage
-                      exit
-                      ;;
-    * )               usage
-                      exit 1
+    --ocp-version )  shift
+                     VERSION=${1}
+                     ;;
+    --channel )      shift
+                     CHANNEL=${1}
+                     ;;
+    -h | --help )    usage
+                     exit
+                     ;;
+    * )              usage
+                     exit 1
     esac
     shift
 done

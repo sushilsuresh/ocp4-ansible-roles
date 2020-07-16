@@ -12,6 +12,7 @@ run this script from a machine that has internet
 connectivty or access to hit https://api.openshift.com/
 
 Reference:
+
 - link:https://access.redhat.com/solutions/4583231[OpenShift Container Platform (OCP) 4 upgrade paths]
 - link:https://access.redhat.com/solutions/4606811[How to Upgrade OpenShift 4 between different minor versions via "oc" cli]
 - link:https://www.ocp-upgrade.net/[OpenShift Upgrade Path - Graphs]
@@ -21,7 +22,7 @@ Reference:
 OpenShift 4.3.0 on stable-4.3
 
 ```bash
-Sushils-MacBook-Pro:scripts sushil$ ./check-upgrade-path.sh --version 4.3.0 --channel stable-4.3
+Sushils-MacBook-Pro:scripts sushil$ ./check-upgrade-path.sh --ocp-version 4.3.0 --channel stable-4.3
 [
   "4.3.18",
   "4.3.28"
@@ -36,7 +37,7 @@ From the output you can see that you can upgrade to 4.3.18 or 4.3.28
 Uprade options for OCP 4.3.18 on stable-4.3 channel
 
 ```bash
-Sushils-MacBook-Pro:scripts sushil$ ./check-upgrade-path.sh --version 4.3.18 --channel stable-4.3
+Sushils-MacBook-Pro:scripts sushil$ ./check-upgrade-path.sh --ocp-version 4.3.18 --channel stable-4.3
 [
   "4.3.19",
   "4.3.21",
@@ -57,7 +58,7 @@ personally move up to the highest possibke version which is 4.3.28
 Upgrading OCP 4.3.18 on stable-4.4 channel
 
 ```bash
-Sushils-MacBook-Pro:scripts sushil$ ./check-upgrade-path.sh --version 4.3.18 --channel stable-4.4
+Sushils-MacBook-Pro:scripts sushil$ ./check-upgrade-path.sh --ocp-version 4.3.18 --channel stable-4.4
 [
   "4.3.19",
   "4.3.21",
@@ -82,9 +83,24 @@ Hang on a second. Could I have then upgrade OCP 4.3.0 directly to OCP 4.4.x if
 I make use of the stable-4.4 channel ?
 
 ``` bash
-Sushils-MacBook-Pro:scripts sushil$ ./check-upgrade-path.sh --version 4.3.0 --channel stable-4.4
+Sushils-MacBook-Pro:scripts sushil$ ./check-upgrade-path.sh --ocp-version 4.3.0 --channel stable-4.4
 []
 ```
 
-The answer is NO, you cannot ugrade (shouldn't try/froce) from OCP 4.3.0 to
+The answer is NO, you cannot upgrade (shouldn't try/froce) from OCP 4.3.0 to
 OCP 4.4.x directly in one step.
+
+**Example - 5 :**
+OpenShift 4.5.1 just got released can I upgrade OCP 4.4.8 directly to
+OCP 4.5.1 ?
+
+```bash
+Sushils-MacBook-Pro:scripts sushil$ ./check-upgrade-path.sh --ocp-version 4.4.8 --channel stable-4.5
+[]
+```
+
+Even though OCP 4.5.1 is available in the stable-4.5 channel it is still not
+avaialble as an upgrade path for OCP 4.4.x yet. Once the upgrade has been made
+available for 4.4.x release it will show up and tell you which version of
+OCP 4.5.x it is safe to upgrade to.
+
