@@ -1,0 +1,14 @@
+- name: Get OpenShift Version
+  command: oc version -o json
+  register: reg_oc_version
+  changed_when: false
+
+- name: register ocp_version fact
+  set_fact:
+    ocp_version: "{{ (reg_oc_version.stdout | from_json).openshiftVersion }}"
+
+- name: register ocp_major_version fact
+  set_fact:
+    ocp_major_version: "{{ ocp_version.split('.')[:2] | join('.') }}"
+  vars:
+    ocp_version: "{{ (reg_oc_version.stdout | from_json).openshiftVersion }}"

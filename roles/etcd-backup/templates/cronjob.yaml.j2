@@ -45,6 +45,14 @@ spec:
             - mountPath: /usr/local/bin/etcd-snapshot-backup-disconnected.sh
               name: etcd-backup-scripts
               subPath: etcd-snapshot-backup-disconnected.sh
+          env:
+            - name: MASTER_IP
+              valueFrom:
+                fieldRef: status.hostIP
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
           nodeSelector:
             node-role.kubernetes.io/master: ""
           dnsPolicy: ClusterFirst

@@ -1,9 +1,33 @@
+# NOTE: The command oc adm release info --image-for etcd used to fetch the
+#       etcd image will only work in a connectec cluster. So we are adding this
+#       in a block section so that if it fails, we will fetch the image id by
+#       force by getting it from the etcd pod specs
+- block:
+    - name: Get current cluster's etcd image
+      command: oc adm release info --image-for etcd
+      register: reg_etcd_image
+      changed_when: false
 
-- name: Get current cluster's etcd image
-  command: oc adm release info --image-for etcd
-  register: reg_etcd_image
+    - name: Set etcd_image fact
+      set_fact:
+        etcd_image: "{{ reg_etcd_image.stdout }}"
+  rescue:
+    - debug:
+        msg: >-
+          Looks like we are working with a disconnected cluster.
+          You may ignore the previous error message.
 
-- name: Set etcd_image fact
-  set_fact:
-    etcd_image: "{{ reg_etcd_image.stdout }}"
+    - name: Get current clusters etcd member pods
+      k8s_info:
+        api_version: v1
+        kind: Pod
+        namespace: openshift-etcd
+      register: reg_etcd_pods
 
+    - name: Set etcd_image fact
+      set_fact:
+        etcd_image: "{{ container_image }}"
+      vars:
+        etcd_pod: "{{ reg_etcd_pods.resources[0] }}"
+        image_query: "spec.containers[?name=='etcdctl'].image"
+        container_image: "{{ (etcd_pod | json_query(image_query))[0] }}"

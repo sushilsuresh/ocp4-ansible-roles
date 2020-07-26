@@ -14,9 +14,19 @@ other branches.
 - creates a snapshot of the etcd database
 - saves the snapshot to an pvc volume
 
-IMPORTANT: This version of the script is tested with OCP 4.4.3 . If you run
-           into issues, try the older version of this role in the ocp-4.2 or
-           the ocp-4.3.10 branch.
+IMPORTANT: The files folder has several versions of the backup script. one for
+           each OpenShift version. When OCP 4.6 becomes available we will may
+           need to create a version of backup_script-4.6.sh which is compatible
+           with openshfit 4.6
+
+```bash
+[sushil@rhltop etcd-backup]$ tree files/
+files/
+├── backup_script-4.2.sh
+├── backup_script-4.3.sh
+├── backup_script-4.4.sh
+├── backup_script-4.5.sh
+```
 
 The cron job creates a new pod with the exact same image as the etcd pods
 The reson why we are using the same image as the etcd pods is to make sure
