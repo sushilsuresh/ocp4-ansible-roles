@@ -1,0 +1,40 @@
+
+- name: Wait for new machine configs to trigger an an MCP rollout
+  k8s_info:
+    api_version: machineconfiguration.openshift.io/v1
+    kind: MachineConfigPool
+  register: reg_mcpool_status
+  vars:
+    status_query: "resources[*].status.conditions[?type=='Updating'].status"
+    # query to extract all status for the UPDATING column in machine config pool
+    updating_status: "{{ reg_mcpool_status | json_query(status_query) | flatten | unique }}"
+    # once have all the status in an array, flatten it and unique it.
+    # we are expecting to see atleast one 'True' in the list to indicate that
+    # a change has been triggered.
+    updating: 'True'
+  until:
+    - updating in updating_status
+  retries: 60 # wait for 5 minutes max
+  delay: 5
+
+- name: Wait for updated machine configs to be pushed out
+  k8s_info:
+    api_version: machineconfiguration.openshift.io/v1
+    kind: MachineConfigPool
+  register: reg_mcpool_status
+  vars:
+    status_query: "resources[*].status.conditions[?type=='Updated'].status"
+    # query to extract all status for the UPDATED column in machine config pool
+    update_status: "{{ reg_mcpool_status | json_query(status_query) | flatten | unique }}"
+    # once have all the status in an array, flatten it and unique it.
+    # All of the status's should be True. So after flattening and uniquing it
+    # we are expecting to see an array with just 1 element ['True']
+  until:
+    - update_status == ['True']
+  retries: 60 # wait for 1 hour max
+  delay: 60
+  # TODO: As of now we wait for 1 hours for the config changes to be pushed out
+  # This is purely an arbitary number based on what we found whilst installing
+  # a fresh cluster. Ideally the amount of time we wait, should be a factor
+  # of the total number nodes in the cluster. May be a future nice have :-)
+
