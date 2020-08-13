@@ -37,7 +37,7 @@
     definition: "{{ lookup('file', 'istio-installation.yml') }}"
 
 - name: Get ServiceMeshMemberRoll object
-  k8s_facts:
+  k8s_info:
     api_version: maistra.io/v1
     kind: ServiceMeshMemberRoll
   register: reg_servicemesh_member_roll

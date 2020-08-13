@@ -1,7 +1,7 @@
 # Configure/Setup CPI compoent of the vmware driver
 
 - name: Get OCP nodes
-  k8s_facts:
+  k8s_info:
     api_version: v1
     kind: Node
   register: reg_nodes
@@ -78,7 +78,7 @@
 #    --serviceaccount={{ vsphere_namespace }}:cloud-controller-manager
 
 - name: get privileged SecurityContext Object
-  k8s_facts:
+  k8s_info:
     api_version: security.openshift.io/v1
     kind: SecurityContextConstraints
     name: privileged

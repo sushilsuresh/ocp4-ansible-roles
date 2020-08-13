@@ -3,7 +3,7 @@
 # named "ontap_nfs_default"
 # Need to parametarise this.
 - name: Fetch storageclasses
-  k8s_facts:
+  k8s_info:
     api_version: storage.k8s.io/v1
     kind: StorageClass
     name: ontap-nfs-default

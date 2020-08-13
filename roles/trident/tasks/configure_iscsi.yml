@@ -1,7 +1,7 @@
 # Get the current state of the MachineConfigPool object before we start making
 # changes to the same.
 - name: Get MachineConfigPool objects before pushing out new machineconfig
-  k8s_facts:
+  k8s_info:
     api_version: machineconfiguration.openshift.io/v1
     kind: MachineConfigPool
   register: reg_mcpool_before
@@ -24,7 +24,7 @@
 # Once the machine configs are pushed out wait for a new machine config to be
 # rendered.
 - name: Wait for new machine configs to be rendered
-  k8s_facts:
+  k8s_info:
     api_version: machineconfiguration.openshift.io/v1
     kind: MachineConfigPool
   register: reg_mcpool_after
@@ -46,7 +46,7 @@
 # Wait for the machine configures to be pushed out to all the woker/master
 # nodes. This coudl take a while.
 - name: Wait for updated machine configs to be pushed out
-  k8s_facts:
+  k8s_info:
     api_version: machineconfiguration.openshift.io/v1
     kind: MachineConfigPool
   register: reg_mcpool_status

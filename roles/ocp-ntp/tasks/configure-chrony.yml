@@ -3,7 +3,7 @@
 # Create machine configs to configure chrony in RHCOS
 
 - name: Get MachineConfigPool objects before pushing out new machineconfig
-  k8s_facts:
+  k8s_info:
     api_version: machineconfiguration.openshift.io/v1
     kind: MachineConfigPool
   register: reg_mcpool_before
@@ -18,7 +18,7 @@
   register: reg_mc_config
 
 - name: Wait for new machine configs to be rendered
-  k8s_facts:
+  k8s_info:
     api_version: machineconfiguration.openshift.io/v1
     kind: MachineConfigPool
   register: reg_mcpool_after
@@ -40,7 +40,7 @@
     - reg_mc_config.changed
 
 - name: Wait for updated machine configs to be pushed out
-  k8s_facts:
+  k8s_info:
     api_version: machineconfiguration.openshift.io/v1
     kind: MachineConfigPool
   register: reg_mcpool_status

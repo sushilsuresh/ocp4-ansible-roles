@@ -2,7 +2,7 @@
 # Prepare Image Registry
 
 - name: get config for imageregistry
-  k8s_facts:
+  k8s_info:
     api_version: imageregistry.operator.openshift.io/v1
     kind: Config
     name: cluster

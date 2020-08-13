@@ -17,7 +17,7 @@
   changed_when: reg_ls_sub is not search(' unchanged')
 
 - name: Wait for local-storage subscription to be installed
-  k8s_facts:
+  k8s_info:
     api_version: operators.coreos.com/v1alpha1
     kind: ClusterServiceVersion
     namespace: local-storage

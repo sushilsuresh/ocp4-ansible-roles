@@ -15,7 +15,7 @@
     creates: "{{ trident_ctl }}"
 
 - name: Get an existing Project
-  k8s_facts:
+  k8s_info:
     api_version: project.openshift.io/v1
     kind: Project
     name: "{{ trident_namespace }}"
@@ -26,7 +26,7 @@
   when: reg_trident_project.resources | length == 0
 
 - name: Check that Trident Svc exists
-  k8s_facts:
+  k8s_info:
     api_version: v1
     kind: Service
     namespace: "{{ trident_namespace }}"
@@ -38,7 +38,7 @@
   when: reg_trident_svc.resources | length == 0
 
 - name: Fetch trident backends
-  k8s_facts:
+  k8s_info:
     api_version: trident.netapp.io/v1
     kind: TridentBackend
     namespace: "{{ trident_namespace }}"
@@ -66,7 +66,7 @@
     - backend.name not in "{{ reg_trident_backend.resources | map(attribute='backendName') | list }}"
 
 - name: Fetch storageclasses
-  k8s_facts:
+  k8s_info:
     api_version: storage.k8s.io/v1
     kind: StorageClass
   register: reg_storageclass

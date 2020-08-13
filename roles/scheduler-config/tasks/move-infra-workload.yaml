@@ -1,6 +1,6 @@
 # Move the default Ingress Controller to the infra nodes
 - name: Search for defaul Ingress Controller
-  k8s_facts:
+  k8s_info:
     kind: IngressController
     name: default
     namespace: openshift-ingress-operator

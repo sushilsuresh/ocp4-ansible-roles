@@ -1,4 +1,4 @@
 - name: Gather all the Nodes
-  k8s_facts:
+  k8s_info:
     kind: Node
   register: ocp_nodes
