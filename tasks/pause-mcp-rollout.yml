@@ -1,4 +1,6 @@
 # Tasks to pause the machine reboots triggered by machine config changes.
+# Ref:
+#   https://docs.openshift.com/container-platform/4.5/rest_api/machine_apis/machineconfigpool-machineconfiguration-openshift-io-v1.html
 
 - name: Get list of current MCPs
   k8s_info:
