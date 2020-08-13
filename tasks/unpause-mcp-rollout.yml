@@ -1,0 +1,24 @@
+# Tasks to resume node rebootes once all necessary maching config changes
+# have been made. The idea is we do a single reboot of the nodes.
+
+- name: Gather list of current MCPs
+  k8s_info:
+    api_version: machineconfiguration.openshift.io/v1
+    kind: MachineConfigPool
+  register: reg_mcp
+
+- name: Patch MCP spec to reflect paused = false
+  k8s:
+    state: present
+    definition:
+      apiVersion: machineconfiguration.openshift.io/v1
+      kind: MachineConfigPool
+      metadata:
+        name: "{{ mcp_name }}"
+      spec:
+        paused: false
+  loop: "{{ reg_mcp.resources }}"
+  loop_control:
+    label: "{{ mcp_name }}"
+  vars:
+    mcp_name: "{{ item.metadata.name }}"
