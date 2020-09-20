@@ -134,14 +134,16 @@ oc get csr system-admin-csr -o jsonpath='{.status.certificate}' | base64 --decod
 
 # Prepare variables to build our kubeconfig file
 
+# IMPORTANT: We extract the cluster's "name" and "endpoint" from the current
+#            logged in users's active context by referencing json path
+#            '{.clusters[0].name}' and '{.clusters[0].cluster.server}'
 CLUSTER_NAME=$(oc config view --minify -o jsonpath={.clusters[0].name})
+CLUSTER_ENDPOINT=$(oc config view --minify -o jsonpath={.clusters[0].cluster.server})
 
 CLIENT_CERTIFICATE_DATA=$(oc get csr system-admin-csr -o jsonpath='{.status.certificate}')
 # We do not need the approved csr object any more.
 echo "Deleting the approved csr request"
 oc delete csr system-admin-csr
-
-CLUSTER_ENDPOINT=$(oc config view --minify -o jsonpath={.clusters[0].cluster.server})
 
 CLIENT_KEY_DATA=$(cat system-admin.key | base64 -w0)
 

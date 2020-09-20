@@ -117,6 +117,10 @@ There are several reasons why would you want to recreate this kubeconfig.
 * You have deployed custom certificates singned by your internal PKI
   infrastructure. Now your original kubeconfig doesn't work any more.
 
+Reference:
+
+- link:https://medium.com/better-programming/k8s-tips-give-access-to-your-clusterwith-a-client-certificate-dfb3b71a76fe[Kubernetes Tips: Give Access To Your Cluster With A Client Certificate]
+
 IMPORTANT: This script assumes you have an logged in session for a cluster
            admin user account, possibly an Identity backed user account.
            (eg: an LDAP autenticated user)
@@ -130,6 +134,13 @@ Steps take by the script can be summarised as
 * Extract the signed certficate form the approved csr object in k8s
 * Extract the CA certifcates in use by the OCP cluster
 * Generate a new kuybeconfig with cluster's CA and the user key and newly signed certificate.
+
+NOTE: We extract the cluster's endpoint and the cluster's name from the current
+      user's active context. Make sure you are in the right context.
+
+We make use of json path '{.clusters[0].name}' and
+'{.clusters[0].cluster.server}'. You can run `oc config view --minify -o json`
+to view what your current user's active context.
 
 **Example usage:**
 
