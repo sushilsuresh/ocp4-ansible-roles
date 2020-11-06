@@ -24,6 +24,9 @@
     backup_scripts:
       - "backup_script-{{ ocp_version }}.sh"
       - "backup_script-{{ ocp_major_version }}.sh"
+      - "backup_script-4.5.sh"
+      # The backup script hasn't changed between OCP 4.5 and OCP 4.6
+      # So defaulting to the 4.5 version of the script.
     etcd_backup_script: "{{ lookup('first_found', backup_scripts) }}"
 
 - name: Create CronJob

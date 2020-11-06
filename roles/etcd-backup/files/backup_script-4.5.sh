@@ -80,23 +80,5 @@ fi
 # dl_etcdctl
 backup_latest_kube_static_resources "${BACKUP_RESOURCE_LIST[@]}"
 
-#####################################################
-# I am setting this in the cronjob container spec
-# However not able to get the node/host IP using the
-# enironment variables ${NODE_IP} or ${MASTER_IP}
-#####################################################
-# env:
-#   - name: MASTER_IP
-#     valueFrom:
-#       fieldRef: status.hostIP
-#   - name: NODE_IP
-#     valueFrom:
-#       fieldRef:
-#         fieldPath: status.hostIP
-#####################################################
-# Using DNS lookup instead to figure out
-# NODE/HOST IP address.
-HOST_IP=$(dig +short ${HOSTNAME})
-
 ETCDCTL_ENDPOINTS="https://${HOST_IP}:2379" etcdctl snapshot save "${SNAPSHOT_FILE}"
 echo "snapshot db and kube resources are successfully saved to ${BACKUP_DIR}"
